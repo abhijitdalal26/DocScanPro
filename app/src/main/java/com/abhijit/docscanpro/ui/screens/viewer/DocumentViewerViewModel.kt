@@ -1,6 +1,7 @@
 package com.abhijit.docscanpro.ui.screens.viewer
 
 import android.app.Application
+import android.graphics.Bitmap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.abhijit.docscanpro.data.db.AppDatabase
@@ -10,6 +11,7 @@ import com.abhijit.docscanpro.data.repository.DocumentRepository
 import com.abhijit.docscanpro.export.ExportManager
 import com.abhijit.docscanpro.pdf.PdfEditor
 import com.abhijit.docscanpro.utils.FileUtils
+import com.abhijit.docscanpro.utils.QrGenerator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,7 +26,8 @@ data class ViewerUiState(
     val showOcrPanel: Boolean = false,
     val isLoading: Boolean = true,
     val isProcessing: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val qrBitmap: Bitmap? = null
 )
 
 class DocumentViewerViewModel(application: Application) : AndroidViewModel(application) {
@@ -107,6 +110,25 @@ class DocumentViewerViewModel(application: Application) : AndroidViewModel(appli
             _uiState.update { it.copy(document = renamed) }
         }
     }
+
+    fun generateQrForCurrentPage() {
+        val text = getCurrentOcrText().ifEmpty {
+            _uiState.value.document?.name ?: "DocScanPro"
+        }
+        val bitmap = QrGenerator.generateQr(text.take(2953), 512) ?: return
+        _uiState.update { it.copy(qrBitmap = bitmap) }
+    }
+
+    fun shareQrCode() {
+        val bitmap = _uiState.value.qrBitmap ?: return
+        viewModelScope.launch {
+            val file = File(context.cacheDir, "qr_export.png")
+            file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+            exportManager.shareFile(file, "image/png")
+        }
+    }
+
+    fun clearQr() = _uiState.update { it.copy(qrBitmap = null) }
 
     fun getCurrentOcrText(): String =
         _uiState.value.pages.getOrNull(_uiState.value.currentPageIndex)?.ocrText ?: ""

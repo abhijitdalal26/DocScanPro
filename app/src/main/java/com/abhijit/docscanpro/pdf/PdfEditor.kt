@@ -2,6 +2,9 @@ package com.abhijit.docscanpro.pdf
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.Typeface
 import android.graphics.pdf.PdfRenderer
 import android.os.ParcelFileDescriptor
 import com.tom_roush.pdfbox.multipdf.PDFMergerUtility
@@ -150,6 +153,101 @@ class PdfEditor {
             pdfDoc.writeTo(outputFile.outputStream())
             pdfDoc.close()
             Result.success(outputFile)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    fun addPageNumbers(context: Context, inputPath: String, outputPath: String): Result<File> {
+        return try {
+            val inputFile = File(inputPath)
+            val pfd = ParcelFileDescriptor.open(inputFile, ParcelFileDescriptor.MODE_READ_ONLY)
+            val renderer = PdfRenderer(pfd)
+            val pdfDoc = android.graphics.pdf.PdfDocument()
+            val paint = Paint().apply {
+                color = android.graphics.Color.DKGRAY
+                textSize = 36f
+                typeface = Typeface.DEFAULT_BOLD
+                textAlign = Paint.Align.CENTER
+                isAntiAlias = true
+            }
+
+            for (i in 0 until renderer.pageCount) {
+                val page = renderer.openPage(i)
+                val w = page.width * 2; val h = page.height * 2
+                val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+                page.render(bmp, null, null, PdfRenderer.Page.RENDER_MODE_FOR_PRINT)
+                page.close()
+
+                Canvas(bmp).drawText(
+                    "${i + 1} / ${renderer.pageCount}",
+                    w / 2f, h - 24f, paint
+                )
+
+                val pdfPage = pdfDoc.startPage(
+                    android.graphics.pdf.PdfDocument.PageInfo.Builder(w, h, i + 1).create()
+                )
+                pdfPage.canvas.drawBitmap(bmp, 0f, 0f, null)
+                pdfDoc.finishPage(pdfPage)
+                bmp.recycle()
+            }
+
+            renderer.close(); pfd.close()
+            val out = File(outputPath)
+            pdfDoc.writeTo(out.outputStream())
+            pdfDoc.close()
+            Result.success(out)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    fun addWatermarkToPdf(
+        context: Context,
+        inputPath: String,
+        outputPath: String,
+        watermarkText: String,
+        opacity: Int = 60
+    ): Result<File> {
+        return try {
+            val inputFile = File(inputPath)
+            val pfd = ParcelFileDescriptor.open(inputFile, ParcelFileDescriptor.MODE_READ_ONLY)
+            val renderer = PdfRenderer(pfd)
+            val pdfDoc = android.graphics.pdf.PdfDocument()
+            val paint = Paint().apply {
+                color = android.graphics.Color.argb(opacity, 128, 128, 128)
+                textSize = 80f
+                typeface = Typeface.DEFAULT_BOLD
+                textAlign = Paint.Align.CENTER
+                isAntiAlias = true
+            }
+
+            for (i in 0 until renderer.pageCount) {
+                val page = renderer.openPage(i)
+                val w = page.width * 2; val h = page.height * 2
+                val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+                page.render(bmp, null, null, PdfRenderer.Page.RENDER_MODE_FOR_PRINT)
+                page.close()
+
+                val canvas = Canvas(bmp)
+                canvas.save()
+                canvas.rotate(-45f, w / 2f, h / 2f)
+                canvas.drawText(watermarkText, w / 2f, h / 2f, paint)
+                canvas.restore()
+
+                val pdfPage = pdfDoc.startPage(
+                    android.graphics.pdf.PdfDocument.PageInfo.Builder(w, h, i + 1).create()
+                )
+                pdfPage.canvas.drawBitmap(bmp, 0f, 0f, null)
+                pdfDoc.finishPage(pdfPage)
+                bmp.recycle()
+            }
+
+            renderer.close(); pfd.close()
+            val out = File(outputPath)
+            pdfDoc.writeTo(out.outputStream())
+            pdfDoc.close()
+            Result.success(out)
         } catch (e: Exception) {
             Result.failure(e)
         }

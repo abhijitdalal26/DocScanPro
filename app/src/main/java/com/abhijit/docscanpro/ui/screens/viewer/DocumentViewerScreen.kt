@@ -20,9 +20,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -100,6 +102,11 @@ fun DocumentViewerScreen(
                             text = { Text("Share Page") },
                             onClick = { viewModel.shareCurrentPageAsImage(); showActions = false },
                             leadingIcon = { Icon(Icons.Default.Image, null) }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Export as QR Code") },
+                            onClick = { viewModel.generateQrForCurrentPage(); showActions = false },
+                            leadingIcon = { Icon(Icons.Default.QrCode2, null) }
                         )
                         DropdownMenuItem(
                             text = { Text("PDF Tools") },
@@ -327,6 +334,45 @@ fun DocumentViewerScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showPasswordDialog = false; passwordInput = "" }) { Text("Cancel") }
+            }
+        )
+    }
+
+    // QR code export dialog
+    val qrBitmap = uiState.qrBitmap
+    if (qrBitmap != null) {
+        AlertDialog(
+            onDismissRequest = viewModel::clearQr,
+            title = { Text("QR Code Export") },
+            text = {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    androidx.compose.foundation.Image(
+                        bitmap = qrBitmap.asImageBitmap(),
+                        contentDescription = "QR Code",
+                        modifier = Modifier
+                            .size(240.dp)
+                            .padding(8.dp)
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        "Scan to read the extracted text from this page",
+                        fontSize = 12.sp,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.shareQrCode()
+                    viewModel.clearQr()
+                }) { Text("Share") }
+            },
+            dismissButton = {
+                TextButton(onClick = viewModel::clearQr) { Text("Close") }
             }
         )
     }

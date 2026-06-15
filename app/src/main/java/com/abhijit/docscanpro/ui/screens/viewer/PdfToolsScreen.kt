@@ -3,6 +3,7 @@
 package com.abhijit.docscanpro.ui.screens.viewer
 
 import android.app.Application
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -93,6 +94,38 @@ class PdfToolsViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
+    fun addPageNumbers(documentId: Long) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isProcessing = true, resultMessage = null, error = null) }
+            val doc = repository.getDocumentById(documentId)
+            val pdfPath = doc?.pdfPath
+            if (pdfPath == null || !File(pdfPath).exists()) {
+                _uiState.update { it.copy(isProcessing = false, error = "PDF not found") }
+                return@launch
+            }
+            val outputPath = pdfPath.replace(".pdf", "_numbered.pdf")
+            pdfEditor.addPageNumbers(context, pdfPath, outputPath)
+                .onSuccess { _uiState.update { it.copy(isProcessing = false, resultMessage = "Page numbers added successfully") } }
+                .onFailure { e -> _uiState.update { it.copy(isProcessing = false, error = e.message) } }
+        }
+    }
+
+    fun addWatermark(documentId: Long, watermarkText: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isProcessing = true, resultMessage = null, error = null) }
+            val doc = repository.getDocumentById(documentId)
+            val pdfPath = doc?.pdfPath
+            if (pdfPath == null || !File(pdfPath).exists()) {
+                _uiState.update { it.copy(isProcessing = false, error = "PDF not found") }
+                return@launch
+            }
+            val outputPath = pdfPath.replace(".pdf", "_watermarked.pdf")
+            pdfEditor.addWatermarkToPdf(context, pdfPath, outputPath, watermarkText)
+                .onSuccess { _uiState.update { it.copy(isProcessing = false, resultMessage = "Watermark added successfully") } }
+                .onFailure { e -> _uiState.update { it.copy(isProcessing = false, error = e.message) } }
+        }
+    }
+
     fun clearResult() = _uiState.update { it.copy(resultMessage = null, error = null) }
 }
 
@@ -105,6 +138,8 @@ fun PdfToolsScreen(
     val uiState by viewModel.uiState.collectAsState()
     var showCompressDialog by remember { mutableStateOf(false) }
     var compressionQuality by remember { mutableStateOf(60f) }
+    var showWatermarkDialog by remember { mutableStateOf(false) }
+    var watermarkText by remember { mutableStateOf("CONFIDENTIAL") }
 
     LaunchedEffect(uiState.resultMessage) {
         if (uiState.resultMessage != null) {
@@ -158,6 +193,14 @@ fun PdfToolsScreen(
                 )
                 HorizontalDivider(Modifier.padding(horizontal = 16.dp))
                 PdfToolItem(
+                    icon = Icons.Default.FormatListNumbered,
+                    title = "Add Page Numbers",
+                    subtitle = "Stamp page numbers at the bottom of each page",
+                    isLoading = uiState.isProcessing,
+                    onClick = { viewModel.addPageNumbers(documentId) }
+                )
+                HorizontalDivider(Modifier.padding(horizontal = 16.dp))
+                PdfToolItem(
                     icon = Icons.Default.MergeType,
                     title = "Merge PDFs",
                     subtitle = "Coming soon — merge multiple documents",
@@ -174,6 +217,14 @@ fun PdfToolsScreen(
                     subtitle = "Add AES-256 password to this PDF",
                     isLoading = uiState.isProcessing,
                     onClick = { navController.popBackStack() } // Handled in DocumentViewerScreen
+                )
+                HorizontalDivider(Modifier.padding(horizontal = 16.dp))
+                PdfToolItem(
+                    icon = Icons.Default.Watermark,
+                    title = "Add Watermark",
+                    subtitle = "Overlay diagonal text watermark on all pages",
+                    isLoading = uiState.isProcessing,
+                    onClick = { showWatermarkDialog = true }
                 )
             }
 
@@ -235,6 +286,36 @@ fun PdfToolsScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showCompressDialog = false }) { Text("Cancel") }
+            }
+        )
+    }
+
+    // Watermark text dialog
+    if (showWatermarkDialog) {
+        AlertDialog(
+            onDismissRequest = { showWatermarkDialog = false },
+            title = { Text("Watermark Text") },
+            text = {
+                Column {
+                    Text("Enter the text to stamp diagonally across each page")
+                    Spacer(Modifier.height(16.dp))
+                    OutlinedTextField(
+                        value = watermarkText,
+                        onValueChange = { watermarkText = it },
+                        label = { Text("Watermark text") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                Button(onClick = {
+                    showWatermarkDialog = false
+                    viewModel.addWatermark(documentId, watermarkText)
+                }) { Text("Add Watermark") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showWatermarkDialog = false }) { Text("Cancel") }
             }
         )
     }

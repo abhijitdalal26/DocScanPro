@@ -2,26 +2,43 @@ package com.abhijit.docscanpro.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.abhijit.docscanpro.data.preferences.AppPreferences
 import com.abhijit.docscanpro.ui.screens.home.HomeScreen
 import com.abhijit.docscanpro.ui.screens.library.LibraryScreen
 import com.abhijit.docscanpro.ui.screens.library.RecycleBinScreen
 import com.abhijit.docscanpro.ui.screens.lock.LockScreen
+import com.abhijit.docscanpro.ui.screens.onboarding.OnboardingScreen
 import com.abhijit.docscanpro.ui.screens.scanner.BarcodeScannerScreen
 import com.abhijit.docscanpro.ui.screens.scanner.ScannerScreen
 import com.abhijit.docscanpro.ui.screens.settings.SettingsScreen
 import com.abhijit.docscanpro.ui.screens.viewer.DocumentViewerScreen
 import com.abhijit.docscanpro.ui.screens.viewer.PdfToolsScreen
+import kotlinx.coroutines.flow.first
 
 @Composable
 fun AppNavGraph(
     navController: NavHostController,
     startAction: String? = null
 ) {
+    val context = LocalContext.current
+
+    // Show onboarding on first launch
+    LaunchedEffect(Unit) {
+        val prefs = AppPreferences(context)
+        if (prefs.isFirstLaunch.first()) {
+            navController.navigate(Screen.Onboarding.route) {
+                popUpTo(Screen.Home.route) { inclusive = false }
+                launchSingleTop = true
+            }
+        }
+    }
+
     // Deep-link from widget / QS tile / shortcut — go directly to scanner
     LaunchedEffect(startAction) {
         when (startAction) {
@@ -38,6 +55,14 @@ fun AppNavGraph(
         navController = navController,
         startDestination = Screen.Home.route
     ) {
+        composable(Screen.Onboarding.route) {
+            OnboardingScreen(onFinished = {
+                navController.navigate(Screen.Home.route) {
+                    popUpTo(Screen.Onboarding.route) { inclusive = true }
+                }
+            })
+        }
+
         composable(Screen.Home.route) {
             HomeScreen(navController = navController)
         }

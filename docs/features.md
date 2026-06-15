@@ -43,7 +43,7 @@
 | Deskew | ✅ DONE | `camera/ImageEnhancer.kt` | — | Hough lines → rotation correction |
 | Batch scanning session | ✅ DONE | `ui/screens/scanner/ScannerViewModel.kt` | — | List of captured pages in memory |
 | Watermark camera | ✅ DONE | `utils/WatermarkCamera.kt` | — | Canvas timestamp + GPS stamp |
-| QR + barcode scanner (ML Kit) | 📋 TODO | `ui/screens/scanner/ScannerScreen.kt` | Yes | ML Kit Barcode — wire scan button to barcode mode |
+| QR + barcode scanner (ML Kit) | ✅ DONE | `ui/screens/scanner/BarcodeScannerScreen.kt` | — | Full ML Kit barcode scanner with overlay, result sheet, copy/open |
 | Real-time border preview overlay | 📋 TODO | `ui/screens/scanner/ScannerScreen.kt` | Yes | Draw detected quad over PreviewView |
 
 ### OCR
@@ -65,11 +65,11 @@
 | Merge PDFs | ✅ DONE | `pdf/PdfEditor.kt` | — | PDFBox PDFMergerUtility |
 | Split PDF | ✅ DONE | `pdf/PdfEditor.kt` | — | PDFBox Splitter |
 | Extract pages | ✅ DONE | `pdf/PdfEditor.kt` | — | PDFBox |
-| PDF compression | 📋 TODO | `pdf/PdfEditor.kt` | Yes | Re-render pages as JPEG at lower quality |
+| PDF compression | ✅ DONE | `pdf/PdfEditor.kt`, `ui/screens/viewer/PdfToolsScreen.kt` | — | Re-render pages as JPEG, quality slider 20–90% |
 | Image to PDF (from gallery) | 📋 TODO | `pdf/PdfCreator.kt` | Yes | Pick images via gallery, convert |
 | PDF to images | 📋 TODO | `pdf/PdfEditor.kt` | Yes | PDFBox PDFRenderer |
-| Add page numbers | 📋 TODO | `pdf/PdfEditor.kt` | Yes | Canvas overlay on pages |
-| Add watermark overlay to PDF | 📋 TODO | `pdf/PdfEditor.kt` | Yes | PDFBox canvas overlay |
+| Add page numbers | ✅ DONE | `pdf/PdfEditor.kt`, `ui/screens/viewer/PdfToolsScreen.kt` | — | Android PdfDocument Canvas stamp at bottom |
+| Add watermark overlay to PDF | ✅ DONE | `pdf/PdfEditor.kt`, `ui/screens/viewer/PdfToolsScreen.kt` | — | Diagonal text watermark, custom text, 60% opacity |
 
 ### Document Management
 | Feature | Status | Files | Agent Ready | Notes |
@@ -96,7 +96,7 @@
 | Export as Markdown | ✅ DONE | `export/ExportManager.kt` | — | MarkdownExporter |
 | Copy OCR text | ✅ DONE | `export/ExportManager.kt` | — | |
 | QR code generation | ✅ DONE | `utils/QrGenerator.kt` | — | ZXing Core — QR + barcode formats |
-| QR export flow (UI) | 📋 TODO | `ui/screens/viewer/DocumentViewerScreen.kt` | Yes | Show QR dialog + share/save |
+| QR export flow (UI) | ✅ DONE | `ui/screens/viewer/DocumentViewerScreen.kt`, `DocumentViewerViewModel.kt` | — | Generate QR from OCR text, dialog with Share button |
 
 ### Security & Privacy
 | Feature | Status | Files | Agent Ready | Notes |
@@ -105,7 +105,7 @@
 | Session lock state | ✅ DONE | `security/AppLockManager.kt` | — | Auto-timeout in minutes |
 | PIN lock (SHA-256 hash) | ✅ DONE | `data/preferences/AppPreferences.kt` | — | Hash stored in DataStore |
 | Settings UI for security | ✅ DONE | `ui/screens/settings/SettingsScreen.kt` | — | PIN dialog + biometric toggle |
-| Lock screen UI | 📋 TODO | `ui/screens/lock/` | Yes | Shown on app resume if lock enabled |
+| Lock screen UI | ✅ DONE | `ui/screens/lock/LockScreen.kt` | — | Full PIN + biometric screen; MainActivity.onResume() enforces it |
 | Password-protected PDF | ✅ DONE | `pdf/PdfEditor.kt` | — | AES-256 via PDFBox |
 
 ### UI Screens
@@ -118,9 +118,9 @@
 | SettingsScreen | ✅ DONE | `ui/screens/settings/SettingsScreen.kt` | — | All DataStore settings wired |
 | DocumentViewerViewModel | ✅ DONE | `ui/screens/viewer/DocumentViewerViewModel.kt` | — | Load doc + pages, share, favorite, delete |
 | SettingsViewModel | ✅ DONE | `ui/screens/settings/SettingsViewModel.kt` | — | 10 DataStore flows → UiState |
-| Lock screen | 📋 TODO | `ui/screens/lock/` | Yes | |
-| Recycle bin screen | 📋 TODO | `ui/screens/library/` | Yes | Show isInRecycleBin=true docs |
-| Onboarding flow | 📋 TODO | `ui/screens/onboarding/` | Yes | First-launch screens |
+| Lock screen | ✅ DONE | `ui/screens/lock/LockScreen.kt`, `LockViewModel.kt` | — | PIN dots, numpad, biometric auto-prompt |
+| Recycle bin screen | ✅ DONE | `ui/screens/library/RecycleBinScreen.kt` | — | Restore, permanent delete, empty bin dialog |
+| Onboarding flow | ✅ DONE | `ui/screens/onboarding/OnboardingScreen.kt` | — | 4-page HorizontalPager, animated dots, skip/next, DataStore first-launch flag |
 
 ---
 
