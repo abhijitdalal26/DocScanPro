@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <shortcut
+        android:shortcutId="scan_document"
+        android:enabled="true"
+        android:icon="@drawable/ic_launcher_foreground"
+        android:shortcutShortLabel="@string/shortcut_scan"
+        android:shortcutLongLabel="@string/shortcut_scan_long">
+        <intent
+            android:action="com.abhijit.docscanpro.ACTION_SCAN"
+            android:targetPackage="com.abhijit.docscanpro"
+            android:targetClass="com.abhijit.docscanpro.MainActivity" />
+    </shortcut>
+
+    <shortcut
+        android:shortcutId="scan_qr"
+        android:enabled="true"
+        android:icon="@drawable/ic_launcher_foreground"
+        android:shortcutShortLabel="@string/shortcut_qr"
+        android:shortcutLongLabel="@string/shortcut_qr_long">
+        <intent
+            android:action="com.abhijit.docscanpro.ACTION_SCAN_QR"
+            android:targetPackage="com.abhijit.docscanpro"
+            android:targetClass="com.abhijit.docscanpro.MainActivity" />
+    </shortcut>
+
+</shortcuts>

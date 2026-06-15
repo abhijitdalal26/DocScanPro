@@ -1,3 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">DocScan Pro</string>
+
+    <!-- Shortcuts -->
+    <string name="shortcut_scan">Scan</string>
+    <string name="shortcut_scan_long">Scan Document</string>
+    <string name="shortcut_qr">Scan QR</string>
+    <string name="shortcut_qr_long">Scan QR Code</string>
+
+    <!-- Permissions -->
+    <string name="permission_camera_rationale">Camera access is needed to scan documents.</string>
+
+    <!-- Export labels -->
+    <string name="export_pdf">Export as PDF</string>
+    <string name="export_txt">Export as TXT</string>
+    <string name="export_markdown">Export as Markdown</string>
+    <string name="copy_for_ai">Copy for AI</string>
+    <string name="quick_share">Quick Share</string>
+
+    <!-- Document types -->
+    <string name="doc_type_invoice">Invoice</string>
+    <string name="doc_type_receipt">Receipt</string>
+    <string name="doc_type_id">ID Card</string>
+    <string name="doc_type_certificate">Certificate</string>
+    <string name="doc_type_contract">Contract</string>
+    <string name="doc_type_form">Form</string>
+    <string name="doc_type_letter">Letter</string>
+    <string name="doc_type_bank">Bank Statement</string>
+    <string name="doc_type_unknown">Document</string>
 </resources>
