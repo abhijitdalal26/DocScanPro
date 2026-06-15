@@ -9,6 +9,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.abhijit.docscanpro.ui.screens.home.HomeScreen
 import com.abhijit.docscanpro.ui.screens.library.LibraryScreen
+import com.abhijit.docscanpro.ui.screens.library.RecycleBinScreen
+import com.abhijit.docscanpro.ui.screens.lock.LockScreen
 import com.abhijit.docscanpro.ui.screens.scanner.ScannerScreen
 import com.abhijit.docscanpro.ui.screens.settings.SettingsScreen
 import com.abhijit.docscanpro.ui.screens.viewer.DocumentViewerScreen
@@ -68,6 +70,14 @@ fun AppNavGraph(
         ) { backStackEntry ->
             val documentId = backStackEntry.arguments?.getLong("documentId") ?: return@composable
             DocumentViewerScreen(documentId = documentId, navController = navController)
+        }
+
+        composable(Screen.RecycleBin.route) {
+            RecycleBinScreen(navController = navController)
+        }
+
+        composable(Screen.Lock.route) {
+            LockScreen(onUnlocked = { navController.popBackStack() })
         }
     }
 }

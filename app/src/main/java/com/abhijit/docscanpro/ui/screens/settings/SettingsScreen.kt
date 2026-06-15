@@ -144,7 +144,7 @@ fun SettingsScreen(
                     title = "Recycle Bin",
                     subtitle = "View and restore deleted documents",
                     icon = Icons.Default.Delete,
-                    onClick = { /* TODO navigate to recycle bin */ }
+                    onClick = { navController.navigate(com.abhijit.docscanpro.ui.navigation.Screen.RecycleBin.route) }
                 )
                 SettingsItem(
                     title = "Clear Cache",

@@ -1,10 +1,15 @@
 package com.abhijit.docscanpro.pdf
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.pdf.PdfRenderer
+import android.os.ParcelFileDescriptor
 import com.tom_roush.pdfbox.multipdf.PDFMergerUtility
 import com.tom_roush.pdfbox.multipdf.Splitter
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.pdmodel.encryption.AccessPermission
 import com.tom_roush.pdfbox.pdmodel.encryption.StandardProtectionPolicy
+import com.abhijit.docscanpro.utils.FileUtils
 import java.io.File
 import java.io.FileInputStream
 
@@ -64,6 +69,10 @@ class PdfEditor {
         }
     }
 
+    // Convenience overload: same password for owner and user
+    fun protectWithPassword(inputPath: String, outputPath: String, password: String): Result<File> =
+        protectWithPassword(inputPath, outputPath, password, password)
+
     fun protectWithPassword(
         inputPath: String,
         outputPath: String,
@@ -97,6 +106,49 @@ class PdfEditor {
             val outputFile = File(outputPath)
             document.save(outputFile)
             document.close()
+            Result.success(outputFile)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Recompresses all pages of a PDF at a lower JPEG quality to reduce file size.
+     * Uses Android PdfRenderer to render each page → re-encode as JPEG → rebuild PDF.
+     */
+    fun compressPdf(context: Context, inputPath: String, outputPath: String, jpegQuality: Int = 60): Result<File> {
+        return try {
+            val inputFile = File(inputPath)
+            val pfd = ParcelFileDescriptor.open(inputFile, ParcelFileDescriptor.MODE_READ_ONLY)
+            val renderer = PdfRenderer(pfd)
+            val pdfDoc = android.graphics.pdf.PdfDocument()
+
+            for (i in 0 until renderer.pageCount) {
+                val page = renderer.openPage(i)
+                val bitmap = Bitmap.createBitmap(page.width * 2, page.height * 2, Bitmap.Config.ARGB_8888)
+                page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_PRINT)
+                page.close()
+
+                val pdfPage = pdfDoc.startPage(
+                    android.graphics.pdf.PdfDocument.PageInfo.Builder(page.width * 2, page.height * 2, i + 1).create()
+                )
+                // Re-encode at lower quality via canvas drawBitmap
+                val tempFile = File(context.cacheDir, "compress_page_$i.jpg")
+                tempFile.outputStream().use { bitmap.compress(Bitmap.CompressFormat.JPEG, jpegQuality, it) }
+                val reDecoded = android.graphics.BitmapFactory.decodeFile(tempFile.absolutePath)
+                pdfPage.canvas.drawBitmap(reDecoded, 0f, 0f, null)
+                pdfDoc.finishPage(pdfPage)
+                bitmap.recycle()
+                reDecoded?.recycle()
+                tempFile.delete()
+            }
+
+            renderer.close()
+            pfd.close()
+
+            val outputFile = File(outputPath)
+            pdfDoc.writeTo(outputFile.outputStream())
+            pdfDoc.close()
             Result.success(outputFile)
         } catch (e: Exception) {
             Result.failure(e)

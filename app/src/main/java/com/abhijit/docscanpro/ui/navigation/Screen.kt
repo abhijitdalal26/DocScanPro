@@ -13,4 +13,7 @@ sealed class Screen(val route: String) {
     object ScanResult : Screen("scan_result/{documentId}") {
         fun createRoute(documentId: Long) = "scan_result/$documentId"
     }
+
+    object RecycleBin : Screen("recycle_bin")
+    object Lock : Screen("lock")
 }
