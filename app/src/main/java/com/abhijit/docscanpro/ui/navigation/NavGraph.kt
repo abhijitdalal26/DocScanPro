@@ -1,6 +1,7 @@
 package com.abhijit.docscanpro.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -13,7 +14,22 @@ import com.abhijit.docscanpro.ui.screens.settings.SettingsScreen
 import com.abhijit.docscanpro.ui.screens.viewer.DocumentViewerScreen
 
 @Composable
-fun AppNavGraph(navController: NavHostController) {
+fun AppNavGraph(
+    navController: NavHostController,
+    startAction: String? = null
+) {
+    // Deep-link from widget / QS tile / shortcut — go directly to scanner
+    LaunchedEffect(startAction) {
+        when (startAction) {
+            "com.abhijit.docscanpro.ACTION_SCAN",
+            "com.abhijit.docscanpro.ACTION_SCAN_QR" -> {
+                navController.navigate(Screen.Scanner.route) {
+                    launchSingleTop = true
+                }
+            }
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = Screen.Home.route

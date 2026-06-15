@@ -18,6 +18,9 @@ mlkitTextRecognition = "16.0.1"
 mlkitEntityExtraction = "16.0.0-beta5"
 mlkitBarcodeScanning = "17.3.0"
 
+# OpenCV (on-device image processing — edge detect, perspective correct, color modes)
+opencv = "4.10.0"
+
 # QR generation (ZXing core only — no Android UI wrapper)
 zxingCore = "3.5.3"
 
@@ -80,6 +83,9 @@ mlkit-entity-extraction = { group = "com.google.mlkit", name = "entity-extractio
 # ML Kit — Barcode scanning (replaces ZXing Android Embedded)
 mlkit-barcode-scanning = { group = "com.google.mlkit", name = "barcode-scanning", version.ref = "mlkitBarcodeScanning" }
 
+# OpenCV — on-device image processing
+opencv-android = { group = "org.opencv", name = "opencv", version.ref = "opencv" }
+
 # ZXing Core — QR code generation only (lightweight, no Android UI wrapper)
 zxing-core = { group = "com.google.zxing", name = "core", version.ref = "zxingCore" }
 
@@ -106,10 +112,10 @@ navigation-compose = { group = "androidx.navigation", name = "navigation-compose
 # Lifecycle ViewModel Compose
 lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycleViewmodelCompose" }
 
-# Image loading — Coil 3.x (coroutines-first, better Compose integration, multiplatform-ready)
+# Image loading — Coil 3.x
 coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
 
-# Compose performance — prevents recompositions on list/set state
+# Compose performance
 kotlinx-collections-immutable = { group = "org.jetbrains.kotlinx", name = "kotlinx-collections-immutable", version.ref = "kotlinxCollectionsImmutable" }
 
 # Testing

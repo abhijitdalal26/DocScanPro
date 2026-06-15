@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <!-- Main app theme — Compose handles all UI, NoActionBar is correct -->
     <style name="Theme.DocScanPro" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <!-- Splash screen theme — shown by system before MainActivity starts (Android 12+) -->
+    <style name="Theme.DocScanPro.Splash" parent="Theme.SplashScreen">
+        <!-- Splash icon = app launcher icon -->
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_round</item>
+        <!-- Background color shown behind the icon -->
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <!-- Theme to hand off to after splash is done -->
+        <item name="postSplashScreenTheme">@style/Theme.DocScanPro</item>
+    </style>
+
 </resources>

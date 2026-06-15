@@ -70,18 +70,21 @@ dependencies {
     implementation(libs.camerax.lifecycle)
     implementation(libs.camerax.view)
 
-    // ML Kit — OCR (on-device, 100+ languages, zero APK size cost via Play Services)
+    // OpenCV — on-device image processing (edge detect, perspective correct, color modes, shadow removal)
+    implementation(libs.opencv.android)
+
+    // ML Kit — OCR
     implementation(libs.mlkit.text.recognition)
     implementation(libs.mlkit.text.recognition.devanagari)
     implementation(libs.mlkit.entity.extraction)
 
-    // ML Kit — Barcode scanning (replaces ZXing Android: faster, handles damaged codes, GPU-accelerated)
+    // ML Kit — Barcode scanning (GPU-accelerated, handles damaged codes)
     implementation(libs.mlkit.barcode.scanning)
 
-    // ZXing Core — QR code generation only (no Android UI wrapper, much lighter)
+    // ZXing Core — QR code generation only
     implementation(libs.zxing.core)
 
-    // PDF — Android PdfDocument for creation, PDFBox for merge/split/password (Apache 2.0)
+    // PDF
     implementation(libs.pdfbox.android)
 
     // Room — local database with Flow support
@@ -89,10 +92,10 @@ dependencies {
     implementation(libs.room.ktx)
     kapt(libs.room.compiler)
 
-    // DataStore — settings/preferences storage (replaces SharedPreferences)
+    // DataStore — settings storage (replaces SharedPreferences)
     implementation(libs.datastore.preferences)
 
-    // Biometric — fingerprint/face lock for documents and app
+    // Biometric — fingerprint/face lock
     implementation(libs.androidx.biometric)
 
     // Coroutines
@@ -104,10 +107,10 @@ dependencies {
     // ViewModel Compose
     implementation(libs.lifecycle.viewmodel.compose)
 
-    // Coil 3.x — image loading (coroutines-first, better memory management)
+    // Coil 3.x — image loading
     implementation(libs.coil.compose)
 
-    // kotlinx-collections-immutable — prevents Compose recompositions on list/set state
+    // kotlinx-collections-immutable — Compose recomposition optimization
     implementation(libs.kotlinx.collections.immutable)
 
     // Testing
