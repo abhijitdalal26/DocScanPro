@@ -40,6 +40,9 @@ class LibraryViewModel(application: Application) : AndroidViewModel(application)
     private val _uiState = MutableStateFlow(LibraryUiState())
     val uiState: StateFlow<LibraryUiState> = _uiState.asStateFlow()
 
+    // Cached set of document IDs that match the last OCR text search
+    private var ocrDocumentIds: Set<Long> = emptySet()
+
     init {
         observeDocuments()
     }
@@ -64,6 +67,19 @@ class LibraryViewModel(application: Application) : AndroidViewModel(application)
         _uiState.update { state ->
             val filtered = applyFilter(state.documents, query, state.selectedType)
             state.copy(searchQuery = query, filteredDocuments = filtered)
+        }
+        // Also search OCR text asynchronously and refresh
+        if (query.isNotBlank()) {
+            viewModelScope.launch {
+                repository.searchInOcrText(query).collect { pages ->
+                    ocrDocumentIds = pages.map { it.documentId }.toSet()
+                    _uiState.update { state ->
+                        state.copy(filteredDocuments = applyFilter(state.documents, query, state.selectedType))
+                    }
+                }
+            }
+        } else {
+            ocrDocumentIds = emptySet()
         }
     }
 
@@ -131,7 +147,11 @@ class LibraryViewModel(application: Application) : AndroidViewModel(application)
     private fun applyFilter(docs: List<Document>, query: String, type: DocumentType?): List<Document> {
         var result = docs
         if (query.isNotBlank()) {
-            result = result.filter { it.name.contains(query, ignoreCase = true) }
+            // Search by document name OR OCR text (via Page IDs lookup from ocrDocumentIds cache)
+            result = result.filter { doc ->
+                doc.name.contains(query, ignoreCase = true) ||
+                    ocrDocumentIds.contains(doc.id)
+            }
         }
         if (type != null) {
             result = result.filter { it.documentType == type.name }

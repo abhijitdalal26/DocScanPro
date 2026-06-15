@@ -4,6 +4,7 @@ package com.abhijit.docscanpro.ui.screens.scanner
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.BitmapFactory
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.view.PreviewView
@@ -148,18 +149,28 @@ fun ScannerScreen(
                     }
                 }
 
-                IconButton(
-                    onClick = {
-                        cameraManager.toggleTorch()
-                        viewModel.setTorchState(!uiState.isTorchOn)
-                    },
-                    modifier = Modifier.background(Color.Black.copy(alpha = 0.5f), CircleShape)
-                ) {
-                    Icon(
-                        if (uiState.isTorchOn) Icons.Default.FlashOn else Icons.Default.FlashOff,
-                        "Torch",
-                        tint = if (uiState.isTorchOn) Color.Yellow else Color.White
-                    )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    // QR/Barcode scanner mode
+                    IconButton(
+                        onClick = { navController.navigate(Screen.BarcodeScanner.route) },
+                        modifier = Modifier.background(Color.Black.copy(alpha = 0.5f), CircleShape)
+                    ) {
+                        Icon(Icons.Default.QrCodeScanner, "Scan QR/Barcode", tint = Color.White)
+                    }
+                    // Torch
+                    IconButton(
+                        onClick = {
+                            cameraManager.toggleTorch()
+                            viewModel.setTorchState(!uiState.isTorchOn)
+                        },
+                        modifier = Modifier.background(Color.Black.copy(alpha = 0.5f), CircleShape)
+                    ) {
+                        Icon(
+                            if (uiState.isTorchOn) Icons.Default.FlashOn else Icons.Default.FlashOff,
+                            "Torch",
+                            tint = if (uiState.isTorchOn) Color.Yellow else Color.White
+                        )
+                    }
                 }
             }
 
@@ -255,8 +266,27 @@ fun ScannerScreen(
                         }
                     }
 
-                    // Placeholder for symmetry or gallery picker future
-                    Spacer(Modifier.size(56.dp))
+                    // Gallery import button
+                    val galleryLauncher = rememberLauncherForActivityResult(
+                        ActivityResultContracts.GetMultipleContents()
+                    ) { uris ->
+                        uris.forEach { uri ->
+                            try {
+                                context.contentResolver.openInputStream(uri)?.use { stream ->
+                                    val bitmap = BitmapFactory.decodeStream(stream)
+                                    if (bitmap != null) viewModel.addPage(bitmap)
+                                }
+                            } catch (_: Exception) {}
+                        }
+                    }
+                    IconButton(
+                        onClick = { galleryLauncher.launch("image/*") },
+                        modifier = Modifier
+                            .size(56.dp)
+                            .background(Color.Black.copy(alpha = 0.5f), CircleShape)
+                    ) {
+                        Icon(Icons.Default.PhotoLibrary, "Import from gallery", tint = Color.White)
+                    }
                 }
             }
         }

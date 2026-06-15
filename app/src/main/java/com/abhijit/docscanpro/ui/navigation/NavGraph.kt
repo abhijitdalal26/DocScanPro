@@ -11,6 +11,7 @@ import com.abhijit.docscanpro.ui.screens.home.HomeScreen
 import com.abhijit.docscanpro.ui.screens.library.LibraryScreen
 import com.abhijit.docscanpro.ui.screens.library.RecycleBinScreen
 import com.abhijit.docscanpro.ui.screens.lock.LockScreen
+import com.abhijit.docscanpro.ui.screens.scanner.BarcodeScannerScreen
 import com.abhijit.docscanpro.ui.screens.scanner.ScannerScreen
 import com.abhijit.docscanpro.ui.screens.settings.SettingsScreen
 import com.abhijit.docscanpro.ui.screens.viewer.DocumentViewerScreen
@@ -78,6 +79,10 @@ fun AppNavGraph(
 
         composable(Screen.Lock.route) {
             LockScreen(onUnlocked = { navController.popBackStack() })
+        }
+
+        composable(Screen.BarcodeScanner.route) {
+            BarcodeScannerScreen(navController = navController)
         }
     }
 }
