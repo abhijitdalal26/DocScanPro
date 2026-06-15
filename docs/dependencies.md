@@ -4,58 +4,73 @@ All versions pinned in `gradle/libs.versions.toml`.
 
 ## Core Libraries
 
-### CameraX `1.4.0`
+### CameraX `1.4.0` ✅ Best stable
 - `androidx.camera:camera-core` — core CameraX APIs
 - `androidx.camera:camera-camera2` — Camera2 implementation
 - `androidx.camera:camera-lifecycle` — lifecycle-aware camera binding
 - `androidx.camera:camera-view` — PreviewView composable helper
-- **Why:** Official Jetpack camera library, handles lifecycle, rotation, flash automatically. Best choice for 2024+ Android cameras.
+- **Why:** Official Jetpack camera library, handles lifecycle, rotation, flash automatically.
 
-### ML Kit Text Recognition `16.0.1`
-- `com.google.mlkit:text-recognition` — Latin script (covers 100+ languages)
-- `com.google.mlkit:text-recognition-devanagari` — Hindi, Sanskrit, Nepali, Marathi
-- **Why:** 100% on-device, no internet, free, fast. Returns bounding boxes per word — needed for table/heading detection in Markdown exporter.
+### ML Kit Text Recognition `16.0.1` ✅ Best on-device OCR
+- `com.google.mlkit:text-recognition` — Latin script (100+ languages)
+- `com.google.mlkit:text-recognition-devanagari` — Hindi, Sanskrit, Marathi, Nepali
+- **Why:** 100% on-device, free, zero APK size (model downloads via Play Services). Returns bounding boxes per word — critical for Markdown exporter and table detection.
 
-### ML Kit Entity Extraction `16.0.0-beta5`
-- `com.google.mlkit:entity-extraction` — extracts name, phone, email, URL, date from text
-- **Why:** Powers business card scanner. Fully on-device, no API cost.
+### ML Kit Barcode Scanning `17.3.0` ✅ Replaced ZXing Android
+- `com.google.mlkit:barcode-scanning`
+- **Why replaced ZXing Android Embedded (4.3.0):** ZXing Android wrapper was last meaningfully updated in 2022 and is effectively unmaintained. ML Kit Barcode is GPU-accelerated, handles damaged/partial barcodes, works better in low light, and is actively maintained by Google. Same on-device, same zero APK size.
+- **Formats:** QR, Data Matrix, PDF417, Aztec, EAN, UPC, Code128, Code39, ITF, Codabar.
 
-### ZXing Android Embedded `4.3.0`
-- `com.journeyapps:zxing-android-embedded`
-- **Why:** Industry-standard barcode/QR library for Android. Handles encode + decode. Smaller than ML Kit barcode for our use case.
+### ZXing Core `3.5.3` ✅ QR generation only
+- `com.google.zxing:core`
+- **Why:** ML Kit only handles scanning, not generation. ZXing Core is the industry-standard QR/barcode encoder. Just the core library (~350KB), no Android UI wrapper.
 
-### PDFBox-Android `2.0.27.0`
+### ML Kit Entity Extraction `16.0.0-beta5` ✅ Only on-device option
+- `com.google.mlkit:entity-extraction`
+- **Why:** Powers business card scanner. Extracts name, phone, email, URL, address from OCR text. Fully on-device.
+
+### PDFBox-Android `2.0.27.0` ✅ Best Apache 2.0 PDF lib
 - `com.tom-roush:pdfbox-android`
-- **Apache License 2.0** — commercial-friendly
-- **Why:** Best open-source PDF manipulation on Android. Handles merge, split, password protection (AES-256), page extraction. Android port of Apache PDFBox.
-- **Note:** For basic image→PDF creation we use Android's built-in `android.graphics.pdf.PdfDocument` (zero library size cost). PDFBox only for advanced ops.
+- **License:** Apache 2.0 — commercial-friendly (unlike iText which is AGPL)
+- **Why:** Merge, split, password protection (AES-256), page extraction, compression.
+- **Note:** For basic image→PDF we use Android's built-in `android.graphics.pdf.PdfDocument` (zero library cost). PDFBox only for advanced operations.
 
-### OpenCV Android
-- Not in Gradle — add as AAR module manually or use `org.opencv:opencv:4.10.0` (Maven Central since 4.9.0)
-- **Why:** Edge detection (Canny), perspective correction (warpPerspective), color mode processing (CLAHE, threshold, bilateral filter), shadow removal. No alternative for this quality of image processing on Android.
-- **Setup:** Download OpenCV Android SDK from opencv.org, add as module or add Maven Central dependency.
+### Room `2.6.1` ✅ Official Jetpack ORM
+- `androidx.room:room-runtime`, `room-ktx`, `room-compiler` (KAPT)
+- **Why:** Flow queries auto-update UI when DB changes. KAPT generates boilerplate. Most battle-tested SQLite ORM on Android.
 
-### Room `2.6.1`
-- `androidx.room:room-runtime` — core Room
-- `androidx.room:room-ktx` — coroutines support (Flow queries)
-- `androidx.room:room-compiler` — KAPT annotation processor
-- **Why:** Official Jetpack SQLite ORM. Flow support means DB changes automatically update UI via StateFlow.
+### Coil `3.0.4` ✅ Upgraded from 2.7.0
+- `io.coil-kt.coil3:coil-compose`
+- **Why upgraded from 2.7.0:** Coil 3.x is coroutines-first (no more callbacks), better memory management under Compose, multiplatform-ready. Package changed from `io.coil-kt` to `io.coil-kt.coil3`.
+- **Why Coil over Glide:** Coil is Kotlin-first, designed for Compose. Glide is Java-legacy.
 
-### Coroutines `1.8.1`
+### DataStore Preferences `1.1.1` ✅ Added
+- `androidx.datastore:datastore-preferences`
+- **Why added:** Replaces SharedPreferences for storing app settings (default color mode, auto-lock timeout, PIN hash, ad-free status). DataStore uses coroutines + Flow — settings changes automatically propagate to UI. SharedPreferences is synchronous I/O on main thread.
+
+### Biometric `1.1.0` ✅ Added
+- `androidx.biometric:biometric`
+- **Why added:** Needed for the biometric/fingerprint lock on documents and app. Handles all API levels, falls back to PIN on devices without biometrics.
+
+### kotlinx-collections-immutable `0.3.7` ✅ Added
+- `org.jetbrains.kotlinx:kotlinx-collections-immutable`
+- **Why added:** `ImmutableList<T>` and `ImmutableSet<T>` prevent Compose from triggering recompositions when passing list/set state to composables. Standard `List<T>` doesn't implement structural equality, so Compose always recomposes even if contents didn't change.
+
+### Splash Screen API `1.0.1` ✅ Added
+- `androidx.core:core-splashscreen`
+- **Why added:** Android 12+ has a system splash screen. Without this library it shows a generic white screen. This gives us a branded, animated launch screen that matches the app theme.
+
+### Coroutines `1.8.1` ✅ Keep
 - `org.jetbrains.kotlinx:kotlinx-coroutines-android`
-- **Why:** All async ops (OCR, PDF creation, DB queries) run in `viewModelScope` on IO dispatcher. Never blocks main thread.
+- All async ops (OCR, PDF creation, DB queries) run in `viewModelScope` on IO dispatcher.
 
-### Navigation Compose `2.8.0`
+### Navigation Compose `2.8.0` ✅ Keep
 - `androidx.navigation:navigation-compose`
-- **Why:** Official Compose navigation. Handles back stack, deep links, argument passing between screens.
+- Handles back stack, deep links, argument passing between screens.
 
-### Lifecycle ViewModel Compose `2.8.0`
+### Lifecycle ViewModel Compose `2.8.0` ✅ Keep
 - `androidx.lifecycle:lifecycle-viewmodel-compose`
-- **Why:** `viewModel()` composable factory. Needed for screen-level ViewModel injection.
-
-### Coil Compose `2.7.0`
-- `io.coil-kt:coil-compose`
-- **Why:** Async image loading for document thumbnails in library grid. AsyncImage composable integrates with Compose lifecycle. Faster than Glide for Compose.
+- `viewModel()` composable factory for screen-level ViewModels.
 
 ---
 
@@ -63,32 +78,37 @@ All versions pinned in `gradle/libs.versions.toml`.
 
 | Library | Why skipped |
 |---|---|
-| Hilt / Dagger | Overkill for MVP. Manual DI is fine with 1-2 screens. Add in Phase 2 if wiring grows complex. |
+| ZXing Android Embedded | Unmaintained since 2022 — replaced with ML Kit Barcode |
+| iText7 | AGPL license = incompatible with commercial app. Using PDFBox (Apache 2.0). |
+| Hilt / Dagger | Overkill for MVP. Add in Phase 2 if manual DI becomes messy. |
 | Retrofit / OkHttp | No network calls in Phase 1. Everything offline. |
-| Firebase | No backend, no auth, no Firestore. 100% local. |
-| iText7 | AGPL license = incompatible with commercial app unless paid. Using PDFBox (Apache 2.0) instead. |
-| Apache POI (DOCX) | 8MB+ size hit. DOCX export can be done with a minimal XML template writer instead. |
-| Google Translate API | Has free tier (500K chars/month) but adds network dependency. Deferred to Phase 3. |
+| Firebase | No backend, no auth, no Firestore. 100% local-first. |
+| Apache POI (DOCX) | 8MB+ APK hit. DOCX export done with minimal XML template instead. |
+| OpenCV | Not in Gradle yet. See below. |
 
 ---
 
-## Adding OpenCV
+## Adding OpenCV (next step)
 
-OpenCV is not in Maven Central in a stable form for all archs. Two options:
+OpenCV is needed for edge detection, perspective correction, color modes, shadow removal.
 
-**Option A — Maven Central (simpler):**
+**Option A — Maven Central (simplest, recommended):**
 ```toml
+# in [versions]
 opencv = "4.10.0"
+# in [libraries]
 opencv-android = { group = "org.opencv", name = "opencv", version.ref = "opencv" }
 ```
 ```kotlin
+// in app/build.gradle.kts
 implementation(libs.opencv.android)
 ```
 
-**Option B — AAR module (more control):**
-1. Download OpenCV Android SDK from https://opencv.org/releases/
-2. Extract, copy `sdk/` folder into project as `opencv/` module
+**Option B — AAR module (smaller APK, more control):**
+1. Download OpenCV Android SDK from opencv.org/releases/
+2. Copy `sdk/` folder into project as `opencv/` module
 3. Add `include(":opencv")` to settings.gradle.kts
 4. Add `implementation(project(":opencv"))` to app/build.gradle.kts
+5. In `build.gradle.kts` of the opencv module, exclude native ABIs you don't need (saves 30-40MB)
 
-Option A is simpler. Option B gives smaller APK (can exclude unused native libs). Start with Option A.
+Start with Option A. Switch to B only if APK size becomes a concern.

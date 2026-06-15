@@ -49,15 +49,20 @@ android {
 }
 
 dependencies {
-    // Compose BOM + UI
+    // Compose BOM — manages all Compose library versions
     implementation(platform(libs.androidx.compose.bom))
+
+    // AndroidX Core
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.core.splashscreen)
+
+    // Compose UI
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.compose.material3)
 
     // CameraX
     implementation(libs.camerax.core)
@@ -65,33 +70,45 @@ dependencies {
     implementation(libs.camerax.lifecycle)
     implementation(libs.camerax.view)
 
-    // ML Kit OCR
+    // ML Kit — OCR (on-device, 100+ languages, zero APK size cost via Play Services)
     implementation(libs.mlkit.text.recognition)
     implementation(libs.mlkit.text.recognition.devanagari)
     implementation(libs.mlkit.entity.extraction)
 
-    // ZXing (QR + barcode)
-    implementation(libs.zxing.android)
+    // ML Kit — Barcode scanning (replaces ZXing Android: faster, handles damaged codes, GPU-accelerated)
+    implementation(libs.mlkit.barcode.scanning)
 
-    // PDF
+    // ZXing Core — QR code generation only (no Android UI wrapper, much lighter)
+    implementation(libs.zxing.core)
+
+    // PDF — Android PdfDocument for creation, PDFBox for merge/split/password (Apache 2.0)
     implementation(libs.pdfbox.android)
 
-    // Room
+    // Room — local database with Flow support
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     kapt(libs.room.compiler)
 
+    // DataStore — settings/preferences storage (replaces SharedPreferences)
+    implementation(libs.datastore.preferences)
+
+    // Biometric — fingerprint/face lock for documents and app
+    implementation(libs.androidx.biometric)
+
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
 
-    // Navigation
+    // Navigation Compose
     implementation(libs.navigation.compose)
 
-    // ViewModel
+    // ViewModel Compose
     implementation(libs.lifecycle.viewmodel.compose)
 
-    // Image loading
+    // Coil 3.x — image loading (coroutines-first, better memory management)
     implementation(libs.coil.compose)
+
+    // kotlinx-collections-immutable — prevents Compose recompositions on list/set state
+    implementation(libs.kotlinx.collections.immutable)
 
     // Testing
     testImplementation(libs.junit)
