@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
+import com.abhijit.docscanpro.ui.navigation.Screen
 import com.abhijit.docscanpro.utils.FileUtils
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -49,7 +50,9 @@ fun DocumentViewerScreen(
 
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showPasswordDialog by remember { mutableStateOf(false) }
+    var showRenameDialog by remember { mutableStateOf(false) }
     var passwordInput by remember { mutableStateOf("") }
+    var renameInput by remember { mutableStateOf("") }
     var showActions by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -99,9 +102,24 @@ fun DocumentViewerScreen(
                             leadingIcon = { Icon(Icons.Default.Image, null) }
                         )
                         DropdownMenuItem(
+                            text = { Text("PDF Tools") },
+                            onClick = {
+                                showActions = false
+                                uiState.document?.let { doc ->
+                                    navController.navigate(Screen.PdfTools.createRoute(doc.id))
+                                }
+                            },
+                            leadingIcon = { Icon(Icons.Default.Build, null) }
+                        )
+                        DropdownMenuItem(
                             text = { Text("Password Protect") },
                             onClick = { showPasswordDialog = true; showActions = false },
                             leadingIcon = { Icon(Icons.Default.Lock, null) }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Rename") },
+                            onClick = { showRenameDialog = true; showActions = false },
+                            leadingIcon = { Icon(Icons.Default.DriveFileRenameOutline, null) }
                         )
                         DropdownMenuItem(
                             text = { Text("Delete", color = MaterialTheme.colorScheme.error) },
@@ -239,6 +257,32 @@ fun DocumentViewerScreen(
                 }
             }
         }
+    }
+
+    // Rename dialog
+    if (showRenameDialog) {
+        LaunchedEffect(Unit) { renameInput = uiState.document?.name ?: "" }
+        AlertDialog(
+            onDismissRequest = { showRenameDialog = false },
+            title = { Text("Rename Document") },
+            text = {
+                OutlinedTextField(
+                    value = renameInput,
+                    onValueChange = { renameInput = it },
+                    label = { Text("Document name") },
+                    singleLine = true
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.renameDocument(renameInput.ifBlank { "Document" })
+                    showRenameDialog = false
+                }) { Text("Rename") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showRenameDialog = false }) { Text("Cancel") }
+            }
+        )
     }
 
     // Delete confirmation

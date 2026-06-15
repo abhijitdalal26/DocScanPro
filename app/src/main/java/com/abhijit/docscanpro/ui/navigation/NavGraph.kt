@@ -15,6 +15,7 @@ import com.abhijit.docscanpro.ui.screens.scanner.BarcodeScannerScreen
 import com.abhijit.docscanpro.ui.screens.scanner.ScannerScreen
 import com.abhijit.docscanpro.ui.screens.settings.SettingsScreen
 import com.abhijit.docscanpro.ui.screens.viewer.DocumentViewerScreen
+import com.abhijit.docscanpro.ui.screens.viewer.PdfToolsScreen
 
 @Composable
 fun AppNavGraph(
@@ -83,6 +84,14 @@ fun AppNavGraph(
 
         composable(Screen.BarcodeScanner.route) {
             BarcodeScannerScreen(navController = navController)
+        }
+
+        composable(
+            route = Screen.PdfTools.route,
+            arguments = listOf(navArgument("documentId") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val documentId = backStackEntry.arguments?.getLong("documentId") ?: return@composable
+            PdfToolsScreen(documentId = documentId, navController = navController)
         }
     }
 }

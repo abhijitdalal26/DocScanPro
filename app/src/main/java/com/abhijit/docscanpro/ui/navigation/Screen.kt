@@ -17,4 +17,8 @@ sealed class Screen(val route: String) {
     object RecycleBin : Screen("recycle_bin")
     object Lock : Screen("lock")
     object BarcodeScanner : Screen("barcode_scanner")
+
+    object PdfTools : Screen("pdf_tools/{documentId}") {
+        fun createRoute(documentId: Long) = "pdf_tools/$documentId"
+    }
 }

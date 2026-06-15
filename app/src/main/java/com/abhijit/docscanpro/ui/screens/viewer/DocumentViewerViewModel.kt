@@ -99,6 +99,15 @@ class DocumentViewerViewModel(application: Application) : AndroidViewModel(appli
         if (text.isNotEmpty()) exportManager.copyTextToClipboard(text)
     }
 
+    fun renameDocument(newName: String) {
+        val doc = _uiState.value.document ?: return
+        viewModelScope.launch {
+            val renamed = doc.copy(name = newName, updatedAt = System.currentTimeMillis())
+            repository.updateDocument(renamed)
+            _uiState.update { it.copy(document = renamed) }
+        }
+    }
+
     fun getCurrentOcrText(): String =
         _uiState.value.pages.getOrNull(_uiState.value.currentPageIndex)?.ocrText ?: ""
 }

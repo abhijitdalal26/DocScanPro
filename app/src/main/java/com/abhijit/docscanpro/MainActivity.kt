@@ -5,31 +5,56 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.rememberNavController
+import com.abhijit.docscanpro.data.preferences.AppPreferences
+import com.abhijit.docscanpro.security.AppLockManager
 import com.abhijit.docscanpro.ui.navigation.AppNavGraph
+import com.abhijit.docscanpro.ui.navigation.Screen
 import com.abhijit.docscanpro.ui.theme.DocScanProTheme
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import org.opencv.android.OpenCVLoader
 
 class MainActivity : ComponentActivity() {
 
+    private var navController: androidx.navigation.NavController? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Install splash screen BEFORE super.onCreate()
         installSplashScreen()
         super.onCreate(savedInstanceState)
 
-        // Initialize libraries that need a context
         PDFBoxResourceLoader.init(applicationContext)
         OpenCVLoader.initLocal()
 
         enableEdgeToEdge()
         setContent {
             DocScanProTheme {
-                val navController = rememberNavController()
+                val nc = rememberNavController()
+                navController = nc
                 AppNavGraph(
-                    navController = navController,
+                    navController = nc,
                     startAction = intent?.action
                 )
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        checkAppLock()
+    }
+
+    private fun checkAppLock() {
+        lifecycleScope.launch {
+            val prefs = AppPreferences(applicationContext)
+            val lockEnabled = prefs.isAppLockEnabled.first()
+            val autoLockMinutes = prefs.autoLockTimeoutMinutes.first()
+            if (lockEnabled && !AppLockManager.isSessionUnlocked(autoLockMinutes)) {
+                navController?.navigate(Screen.Lock.route) {
+                    launchSingleTop = true
+                }
             }
         }
     }
