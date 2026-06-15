@@ -13,7 +13,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-enum class SortOrder { DATE_DESC, DATE_ASC, NAME_ASC, NAME_DESC, SIZE_DESC }
+enum class SortOrder(val label: String) {
+    DATE_DESC("Newest first"),
+    DATE_ASC("Oldest first"),
+    NAME_ASC("Name A–Z"),
+    NAME_DESC("Name Z–A"),
+    SIZE_DESC("Largest first")
+}
 
 data class LibraryUiState(
     val documents: List<Document> = emptyList(),
@@ -59,6 +65,17 @@ class LibraryViewModel(application: Application) : AndroidViewModel(application)
             val filtered = applyFilter(state.documents, query, state.selectedType)
             state.copy(searchQuery = query, filteredDocuments = filtered)
         }
+    }
+
+    fun setSearchQuery(query: String) = search(query)
+
+    fun setTypeFilter(typeName: String?) {
+        val type = typeName?.let { runCatching { DocumentType.valueOf(it) }.getOrNull() }
+        filterByType(type)
+    }
+
+    fun enterSelectionMode(id: Long) {
+        _uiState.update { it.copy(isSelectionMode = true, selectedIds = setOf(id)) }
     }
 
     fun setSortOrder(order: SortOrder) {

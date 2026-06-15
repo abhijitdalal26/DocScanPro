@@ -23,97 +23,104 @@
 | Room DB models (Document, Page) | ✅ DONE | `data/model/`, `data/db/` | — | |
 | DocumentRepository | ✅ DONE | `data/repository/DocumentRepository.kt` | — | |
 | FileUtils | ✅ DONE | `utils/FileUtils.kt` | — | |
-| Navigation setup (NavGraph, Screen) | ✅ DONE | `ui/navigation/` | — | |
-| Screen skeletons (Home, Scanner, Library, Viewer, Settings) | ✅ DONE | `ui/screens/` | — | Design pending |
+| Navigation setup (NavGraph, Screen) | ✅ DONE | `ui/navigation/` | — | Deep-link from widget/tile wired |
+| App theme (DocScanProTheme) | ✅ DONE | `ui/theme/` | — | Brand palette added, Material 3 |
+| DataStore preferences | ✅ DONE | `data/preferences/AppPreferences.kt` | — | PIN hash, biometric, watermark, OCR, ad-free |
+| Splash screen | ✅ DONE | `res/values/themes.xml`, `MainActivity.kt` | — | Deep navy #0D1117 |
+| Homescreen widget | ✅ DONE | `widget/ScanWidget.kt`, `res/xml/widget_scan_info.xml` | — | 4×1, taps → scanner |
+| Quick Settings tile | ✅ DONE | `service/ScanTileService.kt` | — | Android 14 API compat |
+| Long-press app shortcuts | ✅ DONE | `res/xml/shortcuts.xml` | — | Scan + Scan QR shortcuts |
 
 ### Camera & Scanning
 | Feature | Status | Files | Agent Ready | Notes |
 |---|---|---|---|---|
-| CameraX integration (skeleton) | ✅ DONE | `camera/CameraManager.kt` | — | Preview + capture wired |
-| Auto edge detection (OpenCV) | 📋 TODO | `camera/EdgeDetector.kt` | Yes | Use OpenCV Canny + findContours |
-| Perspective correction (OpenCV) | 📋 TODO | `camera/PerspectiveCorrector.kt` | Yes | getPerspectiveTransform + warpPerspective |
-| 5 color modes (OpenCV) | 📋 TODO | `camera/ColorProcessor.kt` | Yes | Original, B&W, Grayscale, Magic, Enhanced |
-| Deblur + sharpen (OpenCV) | 📋 TODO | `camera/ImageEnhancer.kt` | Yes | Laplacian sharpening, Gaussian blur |
-| Shadow removal (OpenCV) | 📋 TODO | `camera/ImageEnhancer.kt` | Yes | Normalize illumination |
-| Batch scanning session | 📋 TODO | `ui/screens/scanner/ScannerViewModel.kt` | Yes | List of captured pages in memory |
-| QR + barcode scanner (ZXing) | 📋 TODO | `camera/QrScanner.kt` | Yes | ZXing BarcodeScanner wrapper |
-| Whiteboard mode | 📋 TODO | `camera/ColorProcessor.kt` | 🚫 | Needs color modes done first |
-| Real-time border preview overlay | 🚫 BLOCKED | `ui/screens/scanner/` | No | Needs design + EdgeDetector done |
+| CameraX integration | ✅ DONE | `camera/CameraManager.kt`, `ui/screens/scanner/ScannerScreen.kt` | — | LivePreview + capture + torch + zoom |
+| Auto edge detection (OpenCV) | ✅ DONE | `camera/DocumentBorderDetector.kt` | — | Canny→dilate→findContours→quad |
+| Perspective correction (OpenCV) | ✅ DONE | `camera/ImageEnhancer.kt` | — | warpPerspective with ordered corners |
+| 5 color modes (OpenCV) | ✅ DONE | `camera/ImageEnhancer.kt` | — | Original, B&W (adaptive threshold), Grayscale, Magic Color, Enhanced/CLAHE |
+| Shadow removal (OpenCV) | ✅ DONE | `camera/ImageEnhancer.kt` | — | dilate→medianBlur→absdiff→normalize |
+| Deblur + sharpen | ✅ DONE | `camera/ImageEnhancer.kt` | — | bilateral filter + unsharp masking |
+| Deskew | ✅ DONE | `camera/ImageEnhancer.kt` | — | Hough lines → rotation correction |
+| Batch scanning session | ✅ DONE | `ui/screens/scanner/ScannerViewModel.kt` | — | List of captured pages in memory |
+| Watermark camera | ✅ DONE | `utils/WatermarkCamera.kt` | — | Canvas timestamp + GPS stamp |
+| QR + barcode scanner (ML Kit) | 📋 TODO | `ui/screens/scanner/ScannerScreen.kt` | Yes | ML Kit Barcode — wire scan button to barcode mode |
+| Real-time border preview overlay | 📋 TODO | `ui/screens/scanner/ScannerScreen.kt` | Yes | Draw detected quad over PreviewView |
 
 ### OCR
 | Feature | Status | Files | Agent Ready | Notes |
 |---|---|---|---|---|
-| OCR engine (ML Kit skeleton) | ✅ DONE | `ocr/OcrEngine.kt` | — | Latin + Devanagari |
-| Store OCR text in Room | 📋 TODO | `data/repository/DocumentRepository.kt` | Yes | Save OcrResult.fullText to Page.ocrText |
-| Searchable PDF creation | 📋 TODO | `pdf/PdfCreator.kt` | Yes | Overlay invisible text layer on PDF |
-| Export OCR as TXT | 📋 TODO | `export/ExportManager.kt` | Yes | |
-| Export OCR as DOCX | 📋 TODO | `export/ExportManager.kt` | Yes | Use Apache POI or simple XML |
-| Copy to clipboard | 📋 TODO | `export/ExportManager.kt` | Yes | ClipboardManager |
+| OCR engine (ML Kit) | ✅ DONE | `ocr/OcrEngine.kt` | — | Latin + Devanagari, returns OcrResult with blocks |
+| Store OCR text in Room | ✅ DONE | `ui/screens/scanner/ScannerViewModel.kt` | — | OCR run per page on save |
+| Business card extraction | ✅ DONE | `ocr/BusinessCardExtractor.kt` | — | ML Kit Entity + regex heuristics; vCard export |
+| Export OCR as TXT | ✅ DONE | `export/ExportManager.kt` | — | exportToTxt |
+| Export OCR as Markdown | ✅ DONE | `export/ExportManager.kt`, `utils/MarkdownExporter.kt` | — | Detects headings/bullets/tables |
+| Copy to clipboard | ✅ DONE | `export/ExportManager.kt` | — | copyTextToClipboard |
+| Full-text search across pages | 📋 TODO | `data/db/PageDao.kt` | Yes | searchInOcrText already in DAO, wire to UI |
 
 ### PDF
 | Feature | Status | Files | Agent Ready | Notes |
 |---|---|---|---|---|
-| Create PDF from images | ✅ DONE | `pdf/PdfCreator.kt` | — | Uses Android PdfDocument |
-| PDF compression (4 levels) | 📋 TODO | `pdf/PdfEditor.kt` | Yes | Re-render pages as JPEG at lower quality |
-| Password-protect PDF | 📋 TODO | `pdf/PdfEditor.kt` | Yes | PDFBox-Android StandardProtectionPolicy |
-| Merge PDFs | 📋 TODO | `pdf/PdfEditor.kt` | Yes | PDFBox-Android PDFMergerUtility |
-| Split PDF | 📋 TODO | `pdf/PdfEditor.kt` | Yes | PDFBox-Android Splitter |
+| Create PDF from images | ✅ DONE | `pdf/PdfCreator.kt` | — | Android PdfDocument, 4 quality levels |
+| Password-protect PDF | ✅ DONE | `pdf/PdfEditor.kt` | — | PDFBox AES-256 StandardProtectionPolicy |
+| Merge PDFs | ✅ DONE | `pdf/PdfEditor.kt` | — | PDFBox PDFMergerUtility |
+| Split PDF | ✅ DONE | `pdf/PdfEditor.kt` | — | PDFBox Splitter |
+| Extract pages | ✅ DONE | `pdf/PdfEditor.kt` | — | PDFBox |
+| PDF compression | 📋 TODO | `pdf/PdfEditor.kt` | Yes | Re-render pages as JPEG at lower quality |
 | Image to PDF (from gallery) | 📋 TODO | `pdf/PdfCreator.kt` | Yes | Pick images via gallery, convert |
-| PDF to images | 📋 TODO | `pdf/PdfEditor.kt` | Yes | PDFBox-Android PDFRenderer |
-| Add page numbers | 📋 TODO | `pdf/PdfEditor.kt` | Yes | |
-| Add watermark overlay | 📋 TODO | `pdf/PdfEditor.kt` | Yes | |
+| PDF to images | 📋 TODO | `pdf/PdfEditor.kt` | Yes | PDFBox PDFRenderer |
+| Add page numbers | 📋 TODO | `pdf/PdfEditor.kt` | Yes | Canvas overlay on pages |
+| Add watermark overlay to PDF | 📋 TODO | `pdf/PdfEditor.kt` | Yes | PDFBox canvas overlay |
 
 ### Document Management
 | Feature | Status | Files | Agent Ready | Notes |
 |---|---|---|---|---|
 | Room CRUD (save/load/delete docs) | ✅ DONE | `data/db/`, `data/repository/` | — | |
-| Full-text search across docs | 📋 TODO | `data/db/DocumentDao.kt` | Yes | Room FTS4 or LIKE query |
-| Sort by date/name/size | 📋 TODO | `data/db/DocumentDao.kt` | Yes | Add ORDER BY queries |
-| Pin / favorite documents | 📋 TODO | `data/repository/DocumentRepository.kt` | Yes | Toggle `isFavorite` |
-| Recycle bin (soft delete) | 📋 TODO | `data/repository/DocumentRepository.kt` | Yes | Toggle `isInRecycleBin` |
-| Folder/tag organization | 📋 TODO | `data/model/Document.kt` | Yes | Tags already in model |
-| Batch delete / move | 📋 TODO | `data/db/DocumentDao.kt` | Yes | |
-| Page reorder (drag & drop) | 🚫 BLOCKED | `ui/screens/viewer/` | No | Needs design |
-| Duplicate scan | 📋 TODO | `data/repository/DocumentRepository.kt` | Yes | |
-| Document merge (two docs → one) | 📋 TODO | `data/repository/DocumentRepository.kt` | Yes | Combine pages + re-create PDF |
+| Pin / favorite documents | ✅ DONE | `data/repository/DocumentRepository.kt` | — | setFavorite |
+| Recycle bin (soft delete) | ✅ DONE | `data/repository/DocumentRepository.kt` | — | moveToRecycleBin |
+| Sort by date/name/size | ✅ DONE | `ui/screens/library/LibraryViewModel.kt` | — | 5 sort orders in-memory |
+| Document type filter | ✅ DONE | `ui/screens/library/LibraryViewModel.kt` | — | filterByType |
+| Batch delete | ✅ DONE | `ui/screens/library/LibraryViewModel.kt` | — | moveToRecycleBinBatch |
+| Document metadata extraction | ✅ DONE | `utils/DocumentMetadataExtractor.kt` | — | Unified type+regex pipeline with dates/amounts |
+| Document classifier | ✅ DONE | `utils/DocumentClassifier.kt` | — | 8 types, keyword scoring |
+| Full-text search | 📋 TODO | `ui/screens/library/LibraryScreen.kt` | Yes | Wire search to OCR text search |
+| Folder/tag organization | 📋 TODO | `ui/screens/library/` | Yes | Tags in model; UI not yet built |
+| Page reorder (drag & drop) | 📋 TODO | `ui/screens/viewer/` | Yes | Use Compose drag APIs |
 
 ### Export & Sharing
 | Feature | Status | Files | Agent Ready | Notes |
 |---|---|---|---|---|
-| Export PDF | ✅ DONE | `export/ExportManager.kt` | — | Share via FileProvider |
-| Quick Share (no save) | 📋 TODO | `export/ExportManager.kt` | Yes | Compress bitmap → share Intent without saving |
-| 3 quality presets for share | 📋 TODO | `export/ExportManager.kt` | Yes | HIGH/MEDIUM/COMPRESSED JPEG |
-| Share to WhatsApp/Gmail/Telegram | 📋 TODO | `export/ExportManager.kt` | Yes | Share sheet Intent with package filter |
-| Export as Markdown | 📋 TODO | `export/ExportManager.kt` | Yes | Uses MarkdownExporter |
-| QR code export | 📋 TODO | `export/ExportManager.kt` | Yes | ZXing QR generator |
-
-### Rule-Based "AI" Features (Zero API cost)
-| Feature | Status | Files | Agent Ready | Notes |
-|---|---|---|---|---|
-| Document classification (keyword) | ✅ DONE | `utils/DocumentClassifier.kt` | — | |
-| Aadhaar extraction (regex) | ✅ DONE | `utils/RegexExtractors.kt` | — | |
-| PAN extraction (regex) | ✅ DONE | `utils/RegexExtractors.kt` | — | |
-| GST extraction + validation | ✅ DONE | `utils/RegexExtractors.kt` | — | |
-| Email + mobile extraction | ✅ DONE | `utils/RegexExtractors.kt` | — | |
-| Aadhaar masking (last 8 → XXXX) | ✅ DONE | `utils/RegexExtractors.kt` | — | |
-| Markdown export logic | ✅ DONE | `utils/MarkdownExporter.kt` | — | |
-| Business card extraction (ML Kit Entity) | 📋 TODO | `ocr/BusinessCardExtractor.kt` | Yes | ML Kit Entity Extraction |
-| QR code generator | 📋 TODO | `utils/QrGenerator.kt` | Yes | ZXing MultiFormatWriter |
+| Share PDF | ✅ DONE | `export/ExportManager.kt` | — | FileProvider + Intent.ACTION_SEND |
+| Share page as image | ✅ DONE | `export/ExportManager.kt` | — | FileProvider |
+| Quick Share (compressed bitmap) | ✅ DONE | `export/ExportManager.kt` | — | quickShareBitmap → cache → share |
+| Share quality presets | ✅ DONE | `export/ExportManager.kt` | — | HIGH(95)/MEDIUM(75)/COMPRESSED(50) |
+| Export as Markdown | ✅ DONE | `export/ExportManager.kt` | — | MarkdownExporter |
+| Copy OCR text | ✅ DONE | `export/ExportManager.kt` | — | |
+| QR code generation | ✅ DONE | `utils/QrGenerator.kt` | — | ZXing Core — QR + barcode formats |
+| QR export flow (UI) | 📋 TODO | `ui/screens/viewer/DocumentViewerScreen.kt` | Yes | Show QR dialog + share/save |
 
 ### Security & Privacy
 | Feature | Status | Files | Agent Ready | Notes |
 |---|---|---|---|---|
-| PIN lock (app-level) | 📋 TODO | `ui/screens/settings/` | No | Needs design for PIN entry screen |
-| Biometric lock | 📋 TODO | `ui/screens/settings/` | No | Needs design |
-| Password-protected PDF | 📋 TODO | `pdf/PdfEditor.kt` | Yes | PDFBox |
-| Auto-lock timeout | 📋 TODO | `ui/screens/settings/` | No | Needs design |
+| Biometric auth (BiometricPrompt) | ✅ DONE | `security/AppLockManager.kt` | — | BIOMETRIC_STRONG or DEVICE_CREDENTIAL |
+| Session lock state | ✅ DONE | `security/AppLockManager.kt` | — | Auto-timeout in minutes |
+| PIN lock (SHA-256 hash) | ✅ DONE | `data/preferences/AppPreferences.kt` | — | Hash stored in DataStore |
+| Settings UI for security | ✅ DONE | `ui/screens/settings/SettingsScreen.kt` | — | PIN dialog + biometric toggle |
+| Lock screen UI | 📋 TODO | `ui/screens/lock/` | Yes | Shown on app resume if lock enabled |
+| Password-protected PDF | ✅ DONE | `pdf/PdfEditor.kt` | — | AES-256 via PDFBox |
 
-### Quick Access
+### UI Screens
 | Feature | Status | Files | Agent Ready | Notes |
 |---|---|---|---|---|
-| Homescreen widget | 📋 TODO | `widget/ScanWidget.kt` | Yes | AppWidgetProvider |
-| Long-press app shortcuts | 📋 TODO | `res/xml/shortcuts.xml` | Yes | Static shortcuts |
-| Quick Settings tile | 📋 TODO | `service/ScanTileService.kt` | Yes | TileService |
+| HomeScreen | ✅ DONE | `ui/screens/home/HomeScreen.kt` | — | Recent docs grid + stats + FAB |
+| ScannerScreen | ✅ DONE | `ui/screens/scanner/ScannerScreen.kt` | — | CameraX preview + capture + color modes + page strip |
+| LibraryScreen | ✅ DONE | `ui/screens/library/LibraryScreen.kt` | — | Search + filter tabs + grid + batch select |
+| DocumentViewerScreen | ✅ DONE | `ui/screens/viewer/DocumentViewerScreen.kt` | — | HorizontalPager + OCR panel + share/delete/password |
+| SettingsScreen | ✅ DONE | `ui/screens/settings/SettingsScreen.kt` | — | All DataStore settings wired |
+| DocumentViewerViewModel | ✅ DONE | `ui/screens/viewer/DocumentViewerViewModel.kt` | — | Load doc + pages, share, favorite, delete |
+| SettingsViewModel | ✅ DONE | `ui/screens/settings/SettingsViewModel.kt` | — | 10 DataStore flows → UiState |
+| Lock screen | 📋 TODO | `ui/screens/lock/` | Yes | |
+| Recycle bin screen | 📋 TODO | `ui/screens/library/` | Yes | Show isInRecycleBin=true docs |
+| Onboarding flow | 📋 TODO | `ui/screens/onboarding/` | Yes | First-launch screens |
 
 ---
 
@@ -122,10 +129,12 @@
 | Feature | Notes |
 |---|---|
 | AdMob rewarded ads integration | AdMob SDK, gate OCR export + high-res export |
-| One-time IAP (billing) | Google Play Billing Library |
-| Image deblur (OpenCV) | Already in ImageEnhancer scope |
-| Low-light enhancement | OpenCV CLAHE |
-| Finger removal from scan | OpenCV inpainting (cv2.inpaint) |
+| One-time IAP ("Ad-Free Forever" ₹199) | Google Play Billing Library |
+| Barcode scan mode UI | ML Kit Barcode already included |
+| Image deblur (OpenCV) | `ImageEnhancer.kt` already has sharpening |
+| Low-light enhancement | OpenCV CLAHE already implemented |
+| DigiLocker integration | Document import from DigiLocker |
+| Finger removal from scan | OpenCV inpainting |
 
 ---
 
