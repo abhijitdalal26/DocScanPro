@@ -22,6 +22,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.abhijit.docscanpro.data.db.AppDatabase
 import com.abhijit.docscanpro.data.repository.DocumentRepository
+import com.abhijit.docscanpro.export.ExportManager
 import com.abhijit.docscanpro.pdf.PdfEditor
 import com.abhijit.docscanpro.utils.FileUtils
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -126,6 +127,25 @@ class PdfToolsViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
+    fun extractToImages(documentId: Long) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isProcessing = true, resultMessage = null, error = null) }
+            val doc = repository.getDocumentById(documentId)
+            val pdfPath = doc?.pdfPath
+            if (pdfPath == null || !File(pdfPath).exists()) {
+                _uiState.update { it.copy(isProcessing = false, error = "PDF not found") }
+                return@launch
+            }
+            val outputDir = FileUtils.getExportCacheDir(context).absolutePath
+            pdfEditor.extractPagesToImages(context, pdfPath, outputDir)
+                .onSuccess { files ->
+                    _uiState.update { it.copy(isProcessing = false, resultMessage = "Extracted ${files.size} images") }
+                    if (files.isNotEmpty()) ExportManager(context).shareMultipleFiles(files, "image/jpeg")
+                }
+                .onFailure { e -> _uiState.update { it.copy(isProcessing = false, error = e.message) } }
+        }
+    }
+
     fun clearResult() = _uiState.update { it.copy(resultMessage = null, error = null) }
 }
 
@@ -184,6 +204,14 @@ fun PdfToolsScreen(
             }
 
             PdfToolsSection("Pages") {
+                PdfToolItem(
+                    icon = Icons.Default.Image,
+                    title = "PDF to Images",
+                    subtitle = "Export each page as a JPEG and share",
+                    isLoading = uiState.isProcessing,
+                    onClick = { viewModel.extractToImages(documentId) }
+                )
+                HorizontalDivider(Modifier.padding(horizontal = 16.dp))
                 PdfToolItem(
                     icon = Icons.Default.CallSplit,
                     title = "Split PDF",

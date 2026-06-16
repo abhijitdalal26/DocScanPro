@@ -120,6 +120,22 @@ fun SettingsScreen(
                 }
             }
 
+            // Appearance section
+            SettingsSection("Appearance") {
+                SettingsDropdown(
+                    title = "App Theme",
+                    subtitle = when (uiState.darkTheme) {
+                        "DARK" -> "Dark"
+                        "LIGHT" -> "Light"
+                        else -> "Follow System"
+                    },
+                    icon = Icons.Default.DarkMode,
+                    options = listOf("SYSTEM" to "Follow System", "LIGHT" to "Light", "DARK" to "Dark"),
+                    selectedOption = uiState.darkTheme,
+                    onSelect = viewModel::setDarkTheme
+                )
+            }
+
             // Sound & Haptic section
             SettingsSection("Feedback") {
                 SettingsToggle(

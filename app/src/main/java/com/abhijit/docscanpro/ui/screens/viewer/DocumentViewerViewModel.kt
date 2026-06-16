@@ -114,6 +114,28 @@ class DocumentViewerViewModel(application: Application) : AndroidViewModel(appli
         }
     }
 
+    fun exportAsText() {
+        val doc = _uiState.value.document ?: return
+        val text = _uiState.value.pages.joinToString("\n\n---\n\n") { it.ocrText ?: "" }.trim()
+        if (text.isBlank()) return
+        viewModelScope.launch {
+            val file = java.io.File(context.cacheDir, "${FileUtils.sanitizeFileName(doc.name)}.txt")
+            exportManager.exportToTxt(text, file.absolutePath)
+                .onSuccess { exportManager.shareFile(it, "text/plain") }
+        }
+    }
+
+    fun exportAsMarkdown() {
+        val doc = _uiState.value.document ?: return
+        val text = _uiState.value.pages.joinToString("\n\n") { it.ocrText ?: "" }.trim()
+        if (text.isBlank()) return
+        viewModelScope.launch {
+            val file = java.io.File(context.cacheDir, "${FileUtils.sanitizeFileName(doc.name)}.md")
+            exportManager.exportToMarkdown(text, doc.name, file.absolutePath)
+                .onSuccess { exportManager.shareFile(it, "text/markdown") }
+        }
+    }
+
     fun generateQrForCurrentPage() {
         val text = getCurrentOcrText().ifEmpty {
             _uiState.value.document?.name ?: "DocScanPro"

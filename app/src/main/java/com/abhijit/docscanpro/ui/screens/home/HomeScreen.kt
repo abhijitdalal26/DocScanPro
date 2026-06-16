@@ -79,6 +79,10 @@ fun HomeScreen(
                             navController.navigate(Screen.BarcodeScanner.route)
                             fabExpanded = false
                         }
+                        SpeedDialItem("Images to PDF", Icons.Default.PictureAsPdf) {
+                            navController.navigate(Screen.ImagesToPdf.route)
+                            fabExpanded = false
+                        }
                         SpeedDialItem("Recycle Bin", Icons.Default.Delete) {
                             navController.navigate(Screen.RecycleBin.route)
                             fabExpanded = false

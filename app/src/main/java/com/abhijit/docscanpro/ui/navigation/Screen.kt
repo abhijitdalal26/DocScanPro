@@ -22,4 +22,6 @@ sealed class Screen(val route: String) {
     object PdfTools : Screen("pdf_tools/{documentId}") {
         fun createRoute(documentId: Long) = "pdf_tools/$documentId"
     }
+
+    object ImagesToPdf : Screen("images_to_pdf")
 }

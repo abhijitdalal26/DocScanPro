@@ -15,6 +15,7 @@ import com.abhijit.docscanpro.ui.screens.library.RecycleBinScreen
 import com.abhijit.docscanpro.ui.screens.lock.LockScreen
 import com.abhijit.docscanpro.ui.screens.onboarding.OnboardingScreen
 import com.abhijit.docscanpro.ui.screens.scanner.BarcodeScannerScreen
+import com.abhijit.docscanpro.ui.screens.scanner.ImagesToPdfScreen
 import com.abhijit.docscanpro.ui.screens.scanner.ScannerScreen
 import com.abhijit.docscanpro.ui.screens.settings.SettingsScreen
 import com.abhijit.docscanpro.ui.screens.viewer.DocumentViewerScreen
@@ -117,6 +118,10 @@ fun AppNavGraph(
         ) { backStackEntry ->
             val documentId = backStackEntry.arguments?.getLong("documentId") ?: return@composable
             PdfToolsScreen(documentId = documentId, navController = navController)
+        }
+
+        composable(Screen.ImagesToPdf.route) {
+            ImagesToPdfScreen(navController = navController)
         }
     }
 }

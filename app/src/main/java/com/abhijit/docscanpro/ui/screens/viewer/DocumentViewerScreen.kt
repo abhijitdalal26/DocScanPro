@@ -113,6 +113,16 @@ fun DocumentViewerScreen(
                             onClick = { showInfoSheet = true; showActions = false },
                             leadingIcon = { Icon(Icons.Default.Info, null) }
                         )
+                        DropdownMenuItem(
+                            text = { Text("Export as Text (.txt)") },
+                            onClick = { viewModel.exportAsText(); showActions = false },
+                            leadingIcon = { Icon(Icons.Default.TextSnippet, null) }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Export as Markdown (.md)") },
+                            onClick = { viewModel.exportAsMarkdown(); showActions = false },
+                            leadingIcon = { Icon(Icons.Default.Description, null) }
+                        )
                         if (uiState.document?.documentType == "BUSINESS_CARD") {
                             DropdownMenuItem(
                                 text = { Text("Export as Contact (.vcf)") },

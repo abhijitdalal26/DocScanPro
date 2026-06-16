@@ -30,6 +30,7 @@ class AppPreferences(private val context: Context) {
         val HAPTIC_FEEDBACK = booleanPreferencesKey("haptic_feedback")
         val SCAN_SOUND = booleanPreferencesKey("scan_sound")
         val FIRST_LAUNCH = booleanPreferencesKey("first_launch")
+        val DARK_THEME = stringPreferencesKey("dark_theme") // "SYSTEM" | "LIGHT" | "DARK"
     }
 
     private val dataStore = context.dataStore
@@ -79,6 +80,10 @@ class AppPreferences(private val context: Context) {
     val isFirstLaunch: Flow<Boolean> = dataStore.data
         .catchIo()
         .map { prefs -> prefs[FIRST_LAUNCH] ?: true }
+
+    val darkTheme: Flow<String> = dataStore.data
+        .catchIo()
+        .map { prefs -> prefs[DARK_THEME] ?: "SYSTEM" }
 
     // ─── Writes ───────────────────────────────────────────────────────────────
 
@@ -140,6 +145,10 @@ class AppPreferences(private val context: Context) {
 
     suspend fun markFirstLaunchDone() {
         dataStore.edit { it[FIRST_LAUNCH] = false }
+    }
+
+    suspend fun setDarkTheme(theme: String) {
+        dataStore.edit { it[DARK_THEME] = theme }
     }
 
     // ─── Helpers ─────────────────────────────────────────────────────────────

@@ -4,6 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.rememberNavController
@@ -30,7 +32,9 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
         setContent {
-            DocScanProTheme {
+            val prefs = AppPreferences(applicationContext)
+            val darkThemePref by prefs.darkTheme.collectAsState(initial = "SYSTEM")
+            DocScanProTheme(darkThemeOverride = darkThemePref) {
                 val nc = rememberNavController()
                 navController = nc
                 AppNavGraph(

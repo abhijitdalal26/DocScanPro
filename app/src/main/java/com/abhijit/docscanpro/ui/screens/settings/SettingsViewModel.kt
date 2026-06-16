@@ -23,6 +23,7 @@ data class SettingsUiState(
     val isHapticEnabled: Boolean = true,
     val isScanSoundEnabled: Boolean = true,
     val isAdFreePurchased: Boolean = false,
+    val darkTheme: String = "SYSTEM",
     val biometricAvailability: AppLockManager.BiometricAvailability = AppLockManager.BiometricAvailability.UNAVAILABLE
 )
 
@@ -47,6 +48,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch { prefs.isHapticEnabled.collect { v -> _uiState.update { it.copy(isHapticEnabled = v) } } }
         viewModelScope.launch { prefs.isScanSoundEnabled.collect { v -> _uiState.update { it.copy(isScanSoundEnabled = v) } } }
         viewModelScope.launch { prefs.isAdFreePurchased.collect { v -> _uiState.update { it.copy(isAdFreePurchased = v) } } }
+        viewModelScope.launch { prefs.darkTheme.collect { v -> _uiState.update { it.copy(darkTheme = v) } } }
     }
 
     fun setDefaultColorMode(mode: ColorMode) = viewModelScope.launch { prefs.setDefaultColorMode(mode) }
@@ -58,4 +60,5 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     fun setPin(pin: String) = viewModelScope.launch { prefs.setPin(pin) }
     fun clearPin() = viewModelScope.launch { prefs.clearPin() }
     fun setAutoLockTimeout(minutes: Int) = viewModelScope.launch { prefs.setAutoLockTimeout(minutes) }
+    fun setDarkTheme(theme: String) = viewModelScope.launch { prefs.setDarkTheme(theme) }
 }

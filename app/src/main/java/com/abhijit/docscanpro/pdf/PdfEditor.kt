@@ -253,6 +253,32 @@ class PdfEditor {
         }
     }
 
+    fun extractPagesToImages(context: Context, inputPath: String, outputDir: String): Result<List<File>> {
+        return try {
+            val pfd = ParcelFileDescriptor.open(File(inputPath), ParcelFileDescriptor.MODE_READ_ONLY)
+            val renderer = PdfRenderer(pfd)
+            val files = mutableListOf<File>()
+
+            for (i in 0 until renderer.pageCount) {
+                val page = renderer.openPage(i)
+                val bmp = Bitmap.createBitmap(page.width * 2, page.height * 2, Bitmap.Config.ARGB_8888)
+                page.render(bmp, null, null, PdfRenderer.Page.RENDER_MODE_FOR_PRINT)
+                page.close()
+
+                val file = File(outputDir, "page_${i + 1}.jpg")
+                file.outputStream().use { bmp.compress(Bitmap.CompressFormat.JPEG, 90, it) }
+                bmp.recycle()
+                files.add(file)
+            }
+
+            renderer.close()
+            pfd.close()
+            Result.success(files)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     fun getPageCount(inputPath: String): Int {
         return try {
             val document = PDDocument.load(File(inputPath))
