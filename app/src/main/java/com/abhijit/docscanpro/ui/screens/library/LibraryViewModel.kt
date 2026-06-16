@@ -7,6 +7,7 @@ import com.abhijit.docscanpro.data.db.AppDatabase
 import com.abhijit.docscanpro.data.model.Document
 import com.abhijit.docscanpro.data.model.DocumentType
 import com.abhijit.docscanpro.data.repository.DocumentRepository
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -40,8 +41,8 @@ class LibraryViewModel(application: Application) : AndroidViewModel(application)
     private val _uiState = MutableStateFlow(LibraryUiState())
     val uiState: StateFlow<LibraryUiState> = _uiState.asStateFlow()
 
-    // Cached set of document IDs that match the last OCR text search
     private var ocrDocumentIds: Set<Long> = emptySet()
+    private var ocrSearchJob: Job? = null
 
     init {
         observeDocuments()
@@ -68,9 +69,9 @@ class LibraryViewModel(application: Application) : AndroidViewModel(application)
             val filtered = applyFilter(state.documents, query, state.selectedType)
             state.copy(searchQuery = query, filteredDocuments = filtered)
         }
-        // Also search OCR text asynchronously and refresh
+        ocrSearchJob?.cancel()
         if (query.isNotBlank()) {
-            viewModelScope.launch {
+            ocrSearchJob = viewModelScope.launch {
                 repository.searchInOcrText(query).collect { pages ->
                     ocrDocumentIds = pages.map { it.documentId }.toSet()
                     _uiState.update { state ->

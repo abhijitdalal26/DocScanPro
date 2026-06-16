@@ -2,6 +2,8 @@
 
 package com.abhijit.docscanpro.ui.screens.settings
 
+import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -16,6 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import com.abhijit.docscanpro.data.model.ColorMode
 import com.abhijit.docscanpro.security.AppLockManager
@@ -26,6 +29,7 @@ fun SettingsScreen(
     navController: NavHostController,
     viewModel: SettingsViewModel = viewModel()
 ) {
+    val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
     var showPinDialog by remember { mutableStateOf(false) }
     var pinInput by remember { mutableStateOf("") }
@@ -91,7 +95,7 @@ fun SettingsScreen(
                             subtitle = "Lock app with biometric",
                             icon = Icons.Default.Fingerprint,
                             checked = uiState.isAppLockEnabled,
-                            onToggle = { viewModel.setShowOcrAfterScan(it) } // TODO wire to lock toggle
+                            onToggle = viewModel::setAppLockEnabled
                         )
                     }
                     AppLockManager.BiometricAvailability.NOT_ENROLLED -> {
@@ -166,7 +170,10 @@ fun SettingsScreen(
                     title = "Clear Cache",
                     subtitle = "Remove temporary files",
                     icon = Icons.Default.CleaningServices,
-                    onClick = { /* TODO */ }
+                    onClick = {
+                        context.cacheDir.listFiles()?.forEach { it.deleteRecursively() }
+                        Toast.makeText(context, "Cache cleared", Toast.LENGTH_SHORT).show()
+                    }
                 )
             }
 

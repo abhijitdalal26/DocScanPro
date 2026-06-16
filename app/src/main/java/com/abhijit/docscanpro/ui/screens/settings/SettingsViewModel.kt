@@ -52,6 +52,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     }
 
     fun setDefaultColorMode(mode: ColorMode) = viewModelScope.launch { prefs.setDefaultColorMode(mode) }
+    fun setAppLockEnabled(enabled: Boolean) = viewModelScope.launch { prefs.setAppLockEnabled(enabled) }
     fun setShowOcrAfterScan(show: Boolean) = viewModelScope.launch { prefs.setShowOcrAfterScan(show) }
     fun setWatermarkEnabled(enabled: Boolean) = viewModelScope.launch { prefs.setWatermarkEnabled(enabled) }
     fun setWatermarkGpsEnabled(enabled: Boolean) = viewModelScope.launch { prefs.setWatermarkGpsEnabled(enabled) }
