@@ -55,7 +55,7 @@
 | Export OCR as TXT | ✅ DONE | `export/ExportManager.kt` | — | exportToTxt |
 | Export OCR as Markdown | ✅ DONE | `export/ExportManager.kt`, `utils/MarkdownExporter.kt` | — | Detects headings/bullets/tables |
 | Copy to clipboard | ✅ DONE | `export/ExportManager.kt` | — | copyTextToClipboard |
-| Full-text search across pages | 📋 TODO | `data/db/PageDao.kt` | Yes | searchInOcrText already in DAO, wire to UI |
+| Full-text search across pages | ✅ DONE | `ui/screens/library/LibraryViewModel.kt` | — | searchInOcrText wired in search(); ocrDocumentIds cache merges with name filter |
 
 ### PDF
 | Feature | Status | Files | Agent Ready | Notes |
@@ -66,8 +66,8 @@
 | Split PDF | ✅ DONE | `pdf/PdfEditor.kt` | — | PDFBox Splitter |
 | Extract pages | ✅ DONE | `pdf/PdfEditor.kt` | — | PDFBox |
 | PDF compression | ✅ DONE | `pdf/PdfEditor.kt`, `ui/screens/viewer/PdfToolsScreen.kt` | — | Re-render pages as JPEG, quality slider 20–90% |
-| Image to PDF (from gallery) | 📋 TODO | `pdf/PdfCreator.kt` | Yes | Pick images via gallery, convert |
-| PDF to images | 📋 TODO | `pdf/PdfEditor.kt` | Yes | PDFBox PDFRenderer |
+| Image to PDF (from gallery) | ✅ DONE | `ui/screens/scanner/ImagesToPdfScreen.kt` | — | Gallery picker → image list → PdfCreator, navigates to viewer |
+| PDF to images | ✅ DONE | `pdf/PdfEditor.kt`, `ui/screens/viewer/PdfToolsScreen.kt` | — | PdfRenderer → JPEG per page → ExportManager.shareMultipleFiles |
 | Add page numbers | ✅ DONE | `pdf/PdfEditor.kt`, `ui/screens/viewer/PdfToolsScreen.kt` | — | Android PdfDocument Canvas stamp at bottom |
 | Add watermark overlay to PDF | ✅ DONE | `pdf/PdfEditor.kt`, `ui/screens/viewer/PdfToolsScreen.kt` | — | Diagonal text watermark, custom text, 60% opacity |
 
@@ -82,7 +82,7 @@
 | Batch delete | ✅ DONE | `ui/screens/library/LibraryViewModel.kt` | — | moveToRecycleBinBatch |
 | Document metadata extraction | ✅ DONE | `utils/DocumentMetadataExtractor.kt` | — | Unified type+regex pipeline with dates/amounts |
 | Document classifier | ✅ DONE | `utils/DocumentClassifier.kt` | — | 8 types, keyword scoring |
-| Full-text search | 📋 TODO | `ui/screens/library/LibraryScreen.kt` | Yes | Wire search to OCR text search |
+| Full-text search | ✅ DONE | `ui/screens/library/LibraryViewModel.kt` | — | Searches doc name + OCR text across all pages |
 | Folder/tag organization | 📋 TODO | `ui/screens/library/` | Yes | Tags in model; UI not yet built |
 | Page reorder (drag & drop) | 📋 TODO | `ui/screens/viewer/` | Yes | Use Compose drag APIs |
 
