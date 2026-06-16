@@ -8,6 +8,7 @@ import android.graphics.BitmapFactory
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -23,7 +24,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathFillType
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -118,6 +125,44 @@ fun ScannerScreen(
                 },
                 modifier = Modifier.fillMaxSize()
             )
+
+            // Document guide overlay (viewfinder frame with corner brackets)
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val bracketPx = 36.dp.toPx()
+                val strokePx = 3.dp.toPx()
+                val marginH = 40.dp.toPx()
+                val marginTop = 100.dp.toPx()
+                val marginBottom = 220.dp.toPx()
+
+                val left = marginH
+                val top = marginTop
+                val right = size.width - marginH
+                val bottom = size.height - marginBottom
+
+                val dimPath = Path().apply {
+                    addRect(Rect(0f, 0f, size.width, size.height))
+                    addRect(Rect(left, top, right, bottom))
+                    fillType = PathFillType.EvenOdd
+                }
+                drawPath(dimPath, color = Color.Black.copy(alpha = 0.45f))
+
+                drawRect(
+                    color = Color.White.copy(alpha = 0.25f),
+                    topLeft = Offset(left, top),
+                    size = androidx.compose.ui.geometry.Size(right - left, bottom - top),
+                    style = Stroke(width = 1.dp.toPx())
+                )
+
+                val gc = Color.White.copy(alpha = 0.95f)
+                fun bracket(cx: Float, cy: Float, h: Float, v: Float) {
+                    drawLine(gc, Offset(cx, cy), Offset(cx + h * bracketPx, cy), strokePx, cap = StrokeCap.Round)
+                    drawLine(gc, Offset(cx, cy), Offset(cx, cy + v * bracketPx), strokePx, cap = StrokeCap.Round)
+                }
+                bracket(left, top, 1f, 1f)
+                bracket(right, top, -1f, 1f)
+                bracket(right, bottom, -1f, -1f)
+                bracket(left, bottom, 1f, -1f)
+            }
 
             // Top bar: back + torch + page count
             Row(

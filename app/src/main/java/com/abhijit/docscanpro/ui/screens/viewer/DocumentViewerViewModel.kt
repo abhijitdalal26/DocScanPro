@@ -9,6 +9,7 @@ import com.abhijit.docscanpro.data.model.Document
 import com.abhijit.docscanpro.data.model.Page
 import com.abhijit.docscanpro.data.repository.DocumentRepository
 import com.abhijit.docscanpro.export.ExportManager
+import com.abhijit.docscanpro.ocr.BusinessCardExtractor
 import com.abhijit.docscanpro.pdf.PdfEditor
 import com.abhijit.docscanpro.utils.FileUtils
 import com.abhijit.docscanpro.utils.QrGenerator
@@ -36,6 +37,8 @@ class DocumentViewerViewModel(application: Application) : AndroidViewModel(appli
     private val repository = DocumentRepository(AppDatabase.getDatabase(application))
     private val pdfEditor = PdfEditor()
     private val exportManager = ExportManager(context)
+    private val bcExtractorDelegate = lazy { BusinessCardExtractor(context) }
+    private val businessCardExtractor by bcExtractorDelegate
 
     private val _uiState = MutableStateFlow(ViewerUiState())
     val uiState: StateFlow<ViewerUiState> = _uiState.asStateFlow()
@@ -130,6 +133,23 @@ class DocumentViewerViewModel(application: Application) : AndroidViewModel(appli
 
     fun clearQr() = _uiState.update { it.copy(qrBitmap = null) }
 
+    fun exportVCard() {
+        val ocrText = _uiState.value.pages.joinToString("\n") { it.ocrText ?: "" }
+        if (ocrText.isBlank()) return
+        viewModelScope.launch {
+            val card = businessCardExtractor.extract(ocrText)
+            if (card.isEmpty()) return@launch
+            val file = File(context.cacheDir, "contact_${System.currentTimeMillis()}.vcf")
+            file.writeText(card.toVCard())
+            exportManager.shareFile(file, "text/vcard")
+        }
+    }
+
     fun getCurrentOcrText(): String =
         _uiState.value.pages.getOrNull(_uiState.value.currentPageIndex)?.ocrText ?: ""
+
+    override fun onCleared() {
+        super.onCleared()
+        if (bcExtractorDelegate.isInitialized()) businessCardExtractor.close()
+    }
 }

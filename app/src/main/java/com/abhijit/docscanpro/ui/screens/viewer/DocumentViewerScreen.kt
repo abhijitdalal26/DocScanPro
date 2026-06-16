@@ -21,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -32,6 +33,9 @@ import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
 import com.abhijit.docscanpro.ui.navigation.Screen
 import com.abhijit.docscanpro.utils.FileUtils
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -53,6 +57,7 @@ fun DocumentViewerScreen(
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showPasswordDialog by remember { mutableStateOf(false) }
     var showRenameDialog by remember { mutableStateOf(false) }
+    var showInfoSheet by remember { mutableStateOf(false) }
     var passwordInput by remember { mutableStateOf("") }
     var renameInput by remember { mutableStateOf("") }
     var showActions by remember { mutableStateOf(false) }
@@ -103,6 +108,18 @@ fun DocumentViewerScreen(
                             onClick = { viewModel.shareCurrentPageAsImage(); showActions = false },
                             leadingIcon = { Icon(Icons.Default.Image, null) }
                         )
+                        DropdownMenuItem(
+                            text = { Text("Document Info") },
+                            onClick = { showInfoSheet = true; showActions = false },
+                            leadingIcon = { Icon(Icons.Default.Info, null) }
+                        )
+                        if (uiState.document?.documentType == "BUSINESS_CARD") {
+                            DropdownMenuItem(
+                                text = { Text("Export as Contact (.vcf)") },
+                                onClick = { viewModel.exportVCard(); showActions = false },
+                                leadingIcon = { Icon(Icons.Default.ContactPage, null) }
+                            )
+                        }
                         DropdownMenuItem(
                             text = { Text("Export as QR Code") },
                             onClick = { viewModel.generateQrForCurrentPage(); showActions = false },
@@ -338,6 +355,46 @@ fun DocumentViewerScreen(
         )
     }
 
+    // Document info bottom sheet
+    if (showInfoSheet) {
+        ModalBottomSheet(onDismissRequest = { showInfoSheet = false }) {
+            val doc = uiState.document
+            if (doc != null) {
+                Column(
+                    modifier = Modifier
+                        .padding(horizontal = 20.dp)
+                        .padding(bottom = 40.dp)
+                ) {
+                    Text(doc.name, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    Spacer(Modifier.height(4.dp))
+                    doc.documentType?.let { type ->
+                        FilterChip(
+                            selected = true,
+                            onClick = {},
+                            label = { Text(type.replace("_", " ")) }
+                        )
+                    }
+                    Spacer(Modifier.height(16.dp))
+                    HorizontalDivider()
+                    Spacer(Modifier.height(12.dp))
+                    InfoRow(Icons.Default.Collections, "Pages", "${uiState.pages.size}")
+                    InfoRow(Icons.Default.Storage, "Total size", FileUtils.formatFileSize(doc.totalSizeBytes))
+                    InfoRow(Icons.Default.CalendarToday, "Created", infoDate(doc.createdAt))
+                    InfoRow(Icons.Default.Update, "Modified", infoDate(doc.updatedAt))
+                    val wordCount = uiState.pages.sumOf { page ->
+                        page.ocrText?.split("\\s+".toRegex())?.filter { it.isNotEmpty() }?.size ?: 0
+                    }
+                    if (wordCount > 0) {
+                        InfoRow(Icons.Default.TextFields, "OCR words", "$wordCount")
+                    }
+                    if (doc.isFavorite) {
+                        InfoRow(Icons.Default.Star, "Starred", "Yes")
+                    }
+                }
+            }
+        }
+    }
+
     // QR code export dialog
     val qrBitmap = uiState.qrBitmap
     if (qrBitmap != null) {
@@ -377,3 +434,21 @@ fun DocumentViewerScreen(
         )
     }
 }
+
+@Composable
+private fun InfoRow(icon: ImageVector, label: String, value: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(icon, null, modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.primary)
+        Spacer(Modifier.width(12.dp))
+        Text(label, modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
+        Text(value, fontWeight = FontWeight.Medium, fontSize = 14.sp)
+    }
+}
+
+private fun infoDate(timestamp: Long): String =
+    SimpleDateFormat("d MMM yyyy, HH:mm", Locale.ENGLISH).format(Date(timestamp))

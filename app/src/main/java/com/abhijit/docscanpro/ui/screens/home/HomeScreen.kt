@@ -2,6 +2,11 @@
 
 package com.abhijit.docscanpro.ui.screens.home
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -17,6 +22,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -39,6 +45,7 @@ fun HomeScreen(
     viewModel: HomeViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    var fabExpanded by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -55,11 +62,47 @@ fun HomeScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { navController.navigate(Screen.Scanner.route) },
-                containerColor = MaterialTheme.colorScheme.primary
+            Column(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Icon(Icons.Default.CameraAlt, "Scan document")
+                AnimatedVisibility(
+                    visible = fabExpanded,
+                    enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
+                    exit = fadeOut() + slideOutVertically(targetOffsetY = { it })
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.End,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        SpeedDialItem("Barcode Scanner", Icons.Default.QrCodeScanner) {
+                            navController.navigate(Screen.BarcodeScanner.route)
+                            fabExpanded = false
+                        }
+                        SpeedDialItem("Recycle Bin", Icons.Default.Delete) {
+                            navController.navigate(Screen.RecycleBin.route)
+                            fabExpanded = false
+                        }
+                        SpeedDialItem("Library", Icons.Default.GridView) {
+                            navController.navigate(Screen.Library.route)
+                            fabExpanded = false
+                        }
+                        SpeedDialItem("Scan Document", Icons.Default.CameraAlt) {
+                            navController.navigate(Screen.Scanner.route)
+                            fabExpanded = false
+                        }
+                    }
+                }
+
+                FloatingActionButton(
+                    onClick = { fabExpanded = !fabExpanded },
+                    containerColor = MaterialTheme.colorScheme.primary
+                ) {
+                    Icon(
+                        if (fabExpanded) Icons.Default.Close else Icons.Default.Add,
+                        "Actions"
+                    )
+                }
             }
         }
     ) { padding ->
@@ -233,6 +276,32 @@ private fun EmptyHomeState(modifier: Modifier = Modifier, onScanClick: () -> Uni
             Icon(Icons.Default.CameraAlt, null)
             Spacer(Modifier.width(8.dp))
             Text("Scan Document")
+        }
+    }
+}
+
+@Composable
+private fun SpeedDialItem(label: String, icon: ImageVector, onClick: () -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Surface(
+            color = MaterialTheme.colorScheme.surfaceVariant,
+            shape = RoundedCornerShape(8.dp),
+            tonalElevation = 2.dp
+        ) {
+            Text(
+                label,
+                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                style = MaterialTheme.typography.labelMedium
+            )
+        }
+        SmallFloatingActionButton(
+            onClick = onClick,
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        ) {
+            Icon(icon, label, modifier = Modifier.size(20.dp))
         }
     }
 }
